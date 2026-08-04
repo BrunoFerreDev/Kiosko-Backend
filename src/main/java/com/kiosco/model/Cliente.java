@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +24,9 @@ public class Cliente {
     @Column(unique = true)
     private String whatsApp;
 
+    private LocalDateTime fechaRegistro = LocalDateTime.now();
     private Boolean estado;
+
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Anotado> anotados = new ArrayList<>();

@@ -20,6 +20,10 @@ class AppTableProducts extends HTMLElement {
     this.sortFilter = '';
     this.showFilters = false;
 
+    // Listen for product creation or updates to reload list
+    document.addEventListener('product-created', () => this.loadData());
+    document.addEventListener('product-updated', () => this.loadData());
+
     this.renderSkeleton();
     this.initFiltersAndLoad();
   }

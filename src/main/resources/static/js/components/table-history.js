@@ -16,6 +16,8 @@ class AppTableHistory extends HTMLElement {
     // Listen for payment or annotation creation to refresh history
     document.addEventListener('payment-created', () => this.loadData());
     document.addEventListener('annotation-created', () => this.loadData());
+    document.addEventListener('client-created', () => this.loadData());
+    document.addEventListener('client-updated', () => this.loadData());
 
     this.renderSkeleton();
     this.loadData();
@@ -271,7 +273,7 @@ class AppTableHistory extends HTMLElement {
               <input type="checkbox" data-anotado-id="${m.id}" ${isChecked ? 'checked' : ''} class="chk-select-item w-4 h-4 text-primary rounded border-outline-variant focus:ring-primary cursor-pointer" />
             ` : ''}
           </td>
-          
+
           <td class="px-2 sm:px-4 py-3 sm:py-4 whitespace-nowrap text-on-surface-variant font-medium text-xs">
             <span class="sm:hidden font-semibold">${dateShort}</span>
             <span class="hidden sm:inline">${dateFull}</span>
@@ -304,7 +306,7 @@ class AppTableHistory extends HTMLElement {
 
     this.innerHTML = `
       <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
-        
+
         <!-- Header Toolbar -->
         <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-outline-variant/30 bg-surface/50 flex flex-col sm:flex-row justify-between items-center gap-3">
           <h3 class="font-headline-sm text-base sm:text-headline-sm text-on-background font-bold">
@@ -356,10 +358,10 @@ class AppTableHistory extends HTMLElement {
         </div>
 
         <!-- Pagination Component -->
-        <app-pagination 
-          current-page="${this.page}" 
-          total-pages="${this.totalPages}" 
-          total-elements="${this.totalElements}" 
+        <app-pagination
+          current-page="${this.page}"
+          total-pages="${this.totalPages}"
+          total-elements="${this.totalElements}"
           page-size="${this.size}">
         </app-pagination>
       </div>

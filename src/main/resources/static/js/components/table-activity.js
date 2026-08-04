@@ -7,6 +7,10 @@ class AppTableActivity extends HTMLElement {
     // Listen for annotation or payment changes to refresh dashboard activity
     document.addEventListener('annotation-created', () => this.loadData());
     document.addEventListener('payment-created', () => this.loadData());
+    document.addEventListener('client-created', () => this.loadData());
+    document.addEventListener('client-updated', () => this.loadData());
+    document.addEventListener('product-created', () => this.loadData());
+    document.addEventListener('product-updated', () => this.loadData());
 
     this.renderSkeleton();
     this.loadData();

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class Producto {
 
     private String nombre, marca, categoria;
     private BigDecimal precioCosto, precioVenta;
+    private LocalDateTime fechaRegistro = LocalDateTime.now();
     private int stock;
     private Boolean estado;
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)

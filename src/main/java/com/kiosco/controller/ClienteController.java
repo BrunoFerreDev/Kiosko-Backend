@@ -4,8 +4,10 @@ import com.kiosco.dto.ClienteDTO;
 import com.kiosco.record.ClienteR;
 import com.kiosco.service.ClienteService;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,14 +28,14 @@ public class ClienteController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ClienteDTO>> obtenerTodos(@PageableDefault(size = 10) Pageable pageable) {
+    public ResponseEntity<Page<ClienteDTO>> obtenerTodos(@ParameterObject @PageableDefault(size = 10, sort = "fechaRegistro", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(clienteService.obtenerPaginado(pageable));
     }
 
-    @GetMapping("/paginado")
+   /* @GetMapping("/paginado")
     public ResponseEntity<Page<ClienteDTO>> obtenerPaginado(@PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(clienteService.obtenerPaginado(pageable));
-    }
+    }*/
 
     @GetMapping("/{id}")
     public ResponseEntity<ClienteDTO> obtenerPorId(@PathVariable Long id) {

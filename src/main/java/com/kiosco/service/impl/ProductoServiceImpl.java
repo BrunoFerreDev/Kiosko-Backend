@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +32,7 @@ public class ProductoServiceImpl implements ProductoService {
         producto.setPrecioCosto(request.precioCosto());
         producto.setPrecioVenta(request.precioVenta());
         producto.setStock(request.stock());
+        producto.setFechaRegistro(LocalDateTime.now());
         producto.setEstado(request.estado() != null ? request.estado() : true);
         return new ProductoDTO(productoRepo.save(producto));
     }

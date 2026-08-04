@@ -12,6 +12,8 @@ class AppTableClients extends HTMLElement {
     // Listen for annotation or payment changes to refresh balances
     document.addEventListener('annotation-created', () => this.loadData());
     document.addEventListener('payment-created', () => this.loadData());
+    document.addEventListener('client-created', () => this.loadData());
+    document.addEventListener('client-updated', () => this.loadData());
 
     this.renderSkeleton();
     this.loadData();
@@ -165,10 +167,10 @@ class AppTableClients extends HTMLElement {
         </div>
 
         <!-- Pagination Component -->
-        <app-pagination 
-          current-page="${this.page}" 
-          total-pages="${this.totalPages}" 
-          total-elements="${this.totalElements}" 
+        <app-pagination
+          current-page="${this.page}"
+          total-pages="${this.totalPages}"
+          total-elements="${this.totalElements}"
           page-size="${this.size}">
         </app-pagination>
       </div>

@@ -9,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +23,12 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         for (Producto p : productoRepo.findAll()) {
-            p.setEstado(true);
+            p.setFechaRegistro(LocalDateTime.now());
             productoRepo.save(p);
+        }
+        for (Cliente c : clienteRepo.findAll()) {
+            c.setFechaRegistro(LocalDateTime.now());
+            clienteRepo.save(c);
         }
         if (clienteRepo.count() == 0) {
             cargarClientes();

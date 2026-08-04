@@ -1,4 +1,4 @@
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://localhost:8083';
 const DEFAULT_PAGE_SIZE = 10;
 
 class ApiService {
@@ -42,7 +42,7 @@ export const ClientesService = {
   getPaged: (page = 0, size = DEFAULT_PAGE_SIZE, sort = '') => {
     const params = new URLSearchParams({ page, size: DEFAULT_PAGE_SIZE });
     if (sort) params.append('sort', sort);
-    return ApiService.request(`/clientes/paginado?${params.toString()}`);
+    return ApiService.request(`/clientes?${params.toString()}`);
   },
 
   getById: (id) => ApiService.request(`/clientes/${id}`),
@@ -79,7 +79,7 @@ export const ProductosService = {
   getPaged: (page = 0, size = DEFAULT_PAGE_SIZE, sort = '') => {
     const params = new URLSearchParams({ page, size: DEFAULT_PAGE_SIZE });
     if (sort) params.append('sort', sort);
-    return ApiService.request(`/productos/paginado?${params.toString()}`);
+    return ApiService.request(`/productos?${params.toString()}`);
   },
 
   search: (filters = {}) => {

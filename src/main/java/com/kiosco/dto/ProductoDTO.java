@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,6 +16,7 @@ public class ProductoDTO {
 
     private String nombre, marca, categoria;
     private BigDecimal precioCosto, precioVenta;
+    private LocalDateTime fechaRegistro;
     private int stock;
     private Boolean estado;
 
@@ -25,6 +27,7 @@ public class ProductoDTO {
         this.categoria = producto.getCategoria();
         this.precioCosto = producto.getPrecioCosto();
         this.precioVenta = producto.getPrecioVenta();
+        this.fechaRegistro = producto.getFechaRegistro();
         this.stock = producto.getStock();
         this.estado = producto.getEstado();
     }
