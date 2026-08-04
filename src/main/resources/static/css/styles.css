@@ -1,0 +1,22 @@
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-outlined.fill {
+  font-variation-settings: 'FILL' 1;
+}
+
+/* Modal Animations */
+.modal-backdrop {
+  background-color: rgba(18, 28, 40, 0.4);
+  backdrop-filter: blur(4px);
+  transition: opacity 0.2s ease-in-out;
+}
+
+.modal-content {
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+/* Web component host defaults */
+app-sidebar, app-topbar, app-modal-client, app-modal-annotation, app-kpi-card {
+  display: block;
+}
