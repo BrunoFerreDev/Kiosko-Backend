@@ -1,0 +1,11 @@
+.git
+.gitignore
+.idea
+target
+*.db
+*.db-wal
+*.db-shm
+HELP.md
+README.md
+API_DOCS.md
+.agents
