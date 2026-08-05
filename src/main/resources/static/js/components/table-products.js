@@ -160,6 +160,9 @@ class AppTableProducts extends HTMLElement {
   }
 
   render() {
+    const showAdmin = window.KioskoAPI?.Auth?.isAdmin();
+    const adminClass = showAdmin ? '' : 'hidden';
+
     const categoryOptionsHtml = `<option value="" ${this.categoryFilter === '' ? 'selected' : ''}>Todas las Categorías</option>` +
       this.categories.map(cat => `<option value="${cat}" ${this.categoryFilter === cat ? 'selected' : ''}>${cat}</option>`).join('');
 
@@ -205,7 +208,7 @@ class AppTableProducts extends HTMLElement {
             ${prod.stock} ${getUnidadAbbr(prod.unidadMedida)}
           </span>
         </td>
-        <td class="px-4 sm:px-6 py-4 text-right">
+        <td class="px-4 sm:px-6 py-4 text-right ${adminClass}">
           <div class="flex items-center justify-end gap-1.5 sm:gap-2">
             <button 
               data-edit-json='${JSON.stringify(prod)}' 
@@ -359,7 +362,7 @@ class AppTableProducts extends HTMLElement {
                 <th class="hidden sm:table-cell px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-semibold uppercase text-right">Costo</th>
                 <th class="px-4 sm:px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-semibold uppercase text-right">Precio Venta</th>
                 <th class="px-4 sm:px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-semibold uppercase text-center">Stock</th>
-                <th class="px-4 sm:px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-semibold uppercase text-right">Acciones</th>
+                <th class="px-4 sm:px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-semibold uppercase text-right ${adminClass}">Acciones</th>
               </tr>
             </thead>
             <tbody class="font-data-table text-data-table text-on-surface">

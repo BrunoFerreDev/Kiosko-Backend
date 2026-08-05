@@ -43,12 +43,30 @@ public class DataLoader implements CommandLineRunner {
     }
 
     private void cargarAdmins() {
-        Administrador administrador = new Administrador();
-        administrador.setNombre("Bruno");
-        administrador.setApellido("Ferreira");
-        administrador.setWhatsApp("3743614796");
-        administrador.setContrasenia(passwordEncoder.encode("123456"));
-        administrador.setEstado(true);
-        adminRepo.save(administrador);
+
+        Administrador adminBruno = new Administrador();
+        adminBruno.setNombre("Bruno");
+        adminBruno.setApellido("Ferreira");
+        adminBruno.setWhatsApp("3743614796");
+        adminBruno.setContrasenia(passwordEncoder.encode("123456"));
+        adminBruno.setEstado(true);
+
+        Administrador adminSol = new Administrador();
+        adminSol.setNombre("Sol Angeles");
+        adminSol.setApellido("Ferreira");
+        adminSol.setWhatsApp("3743582264");
+        adminSol.setContrasenia(passwordEncoder.encode("123456"));
+        adminSol.setEstado(true);
+
+        Administrador adminIsabel = new Administrador();
+        adminIsabel.setNombre("Ana Isabel");
+        adminIsabel.setApellido("Pittana");
+        adminIsabel.setWhatsApp("3743445199");
+        adminIsabel.setContrasenia(passwordEncoder.encode("123456"));
+        adminIsabel.setEstado(true);
+
+        adminRepo.save(adminBruno);
+        adminRepo.save(adminSol);
+        adminRepo.save(adminIsabel);
     }
 }

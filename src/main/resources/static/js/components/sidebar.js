@@ -50,7 +50,7 @@ class AppSidebar extends HTMLElement {
         </div>
 
         <!-- Primary Actions -->
-        <div class="flex flex-col gap-2 mb-6">
+        <div id="sidebar-primary-actions" class="flex flex-col gap-2 mb-6">
           <button id="btn-sidebar-annotation" class="w-full flex items-center justify-center gap-2 h-touch-target-min bg-primary text-on-primary rounded-xl hover:bg-primary/90 transition-colors shadow-sm cursor-pointer">
             <span class="material-symbols-outlined">edit_document</span>
             <span class="font-data-table text-data-table font-semibold">Nueva Anotación</span>
@@ -130,14 +130,27 @@ class AppSidebar extends HTMLElement {
     const footer = this.querySelector('#sidebar-footer-auth');
     if (!footer) return;
 
+    // Show/hide primary actions based on admin status
+    const primaryActions = this.querySelector('#sidebar-primary-actions');
+    const isAdmin = window.KioskoAPI?.Auth?.isAdmin();
+    if (primaryActions) {
+      if (isAdmin) {
+        primaryActions.classList.remove('hidden');
+      } else {
+        primaryActions.classList.add('hidden');
+      }
+    }
+
     const jwt = localStorage.getItem('jwt');
-    const username = localStorage.getItem('username') || '';
+    const nombre = localStorage.getItem('nombre') || '';
+    const apellido = localStorage.getItem('apellido') || '';
+    const fullName = `${nombre} ${apellido}`.trim() || 'Usuario';
 
     if (jwt) {
       footer.innerHTML = `
         <div class="px-4 py-1.5 text-xs text-on-surface-variant/70 font-semibold truncate flex items-center gap-1">
           <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-          <span>Sesión: ${username}</span>
+          <span>Sesión: ${fullName}</span>
         </div>
         <button id="btn-auth-logout" class="w-full flex items-center gap-3 px-4 py-3 text-error hover:bg-error/10 rounded-lg transition-colors font-medium cursor-pointer text-left">
           <span class="material-symbols-outlined">logout</span>

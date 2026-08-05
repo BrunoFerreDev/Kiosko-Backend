@@ -98,6 +98,9 @@ class AppTableClients extends HTMLElement {
   }
 
   render() {
+    const showAdmin = window.KioskoAPI?.Auth?.isAdmin();
+    const adminClass = showAdmin ? '' : 'hidden';
+
     const rowsHtml = this.clients.map(cli => {
       const saldo = parseFloat(cli.saldoPendiente || 0);
       const saldoFormatted = saldo > 0 ? `$ ${saldo.toLocaleString('es-AR')}` : '$ 0';
@@ -132,7 +135,7 @@ class AppTableClients extends HTMLElement {
                 <span class="material-symbols-outlined text-sm">visibility</span>
                 <span class="hidden sm:inline">Ver Ficha</span>
               </a>
-              <button data-delete-id="${cli.clienteId}" class="btn-delete-cli h-8 sm:h-9 px-2 text-error hover:bg-error-container/30 rounded-lg text-xs transition-colors cursor-pointer" title="Eliminar">
+              <button data-delete-id="${cli.clienteId}" class="btn-delete-cli h-8 sm:h-9 px-2 text-error hover:bg-error-container/30 rounded-lg text-xs transition-colors cursor-pointer ${adminClass}" title="Eliminar">
                 <span class="material-symbols-outlined text-sm">delete</span>
               </button>
             </div>

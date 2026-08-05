@@ -31,6 +31,7 @@
   <script type="module" src="../js/components/modal-product.js"></script>
   <script type="module" src="../js/components/modal-brand.js"></script>
   <script type="module" src="../js/components/modal-category.js"></script>
+  <script type="module" src="../js/components/modal-upload.js"></script>
   <script type="module" src="../js/app.js"></script>
 </head>
 <body class="bg-background text-on-background font-body-md text-body-md antialiased flex flex-col md:flex-row min-h-screen">
@@ -54,15 +55,19 @@
           <h1 class="font-display-lg text-2xl sm:text-3xl lg:text-display-lg text-on-surface font-bold">Gestión de Productos</h1>
         </div>
         <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-          <button onclick="openBrandModal()" class="w-full sm:w-auto h-11 sm:h-12 px-4 flex items-center justify-center gap-2 bg-surface-container-highest text-primary border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-colors font-data-table text-data-table font-semibold cursor-pointer">
+          <button onclick="openBrandModal()" class="admin-only w-full sm:w-auto h-11 sm:h-12 px-4 flex items-center justify-center gap-2 bg-surface-container-highest text-primary border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-colors font-data-table text-data-table font-semibold cursor-pointer">
             <span class="material-symbols-outlined text-sm">add</span>
             <span>Nueva Marca</span>
           </button>
-          <button onclick="openCategoryModal()" class="w-full sm:w-auto h-11 sm:h-12 px-4 flex items-center justify-center gap-2 bg-surface-container-highest text-primary border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-colors font-data-table text-data-table font-semibold cursor-pointer">
+          <button onclick="openCategoryModal()" class="admin-only w-full sm:w-auto h-11 sm:h-12 px-4 flex items-center justify-center gap-2 bg-surface-container-highest text-primary border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-colors font-data-table text-data-table font-semibold cursor-pointer">
             <span class="material-symbols-outlined text-sm">add_circle</span>
             <span>Nueva Categoría</span>
           </button>
-          <button onclick="openProductModal()" class="w-full sm:w-auto h-11 sm:h-12 px-6 flex items-center justify-center gap-2 bg-primary text-on-primary rounded-xl hover:bg-primary-fixed-variant transition-colors shadow-sm font-data-table text-data-table font-semibold cursor-pointer">
+          <button onclick="openUploadModal()" class="admin-only w-full sm:w-auto h-11 sm:h-12 px-4 flex items-center justify-center gap-2 bg-surface-container-highest text-primary border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-colors font-data-table text-data-table font-semibold cursor-pointer">
+            <span class="material-symbols-outlined text-sm">upload_file</span>
+            <span>Importar Excel</span>
+          </button>
+          <button onclick="openProductModal()" class="admin-only w-full sm:w-auto h-11 sm:h-12 px-6 flex items-center justify-center gap-2 bg-primary text-on-primary rounded-xl hover:bg-primary-fixed-variant transition-colors shadow-sm font-data-table text-data-table font-semibold cursor-pointer">
             <span class="material-symbols-outlined">add_box</span>
             <span>Nuevo Producto</span>
           </button>
@@ -101,6 +106,7 @@
   <app-modal-annotation></app-modal-annotation>
   <app-modal-brand></app-modal-brand>
   <app-modal-category></app-modal-category>
+  <app-modal-upload></app-modal-upload>
 
 </body>
 </html>

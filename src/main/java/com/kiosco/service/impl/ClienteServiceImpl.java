@@ -10,6 +10,7 @@ import com.kiosco.utils.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ClienteServiceImpl implements ClienteService {
     private final ClienteRepo clienteRepo;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public ClienteDTO crear(ClienteR request) {
@@ -27,6 +29,7 @@ public class ClienteServiceImpl implements ClienteService {
         cliente.setNombre(request.nombre());
         cliente.setApellido(request.apellido());
         cliente.setWhatsApp(request.whatsApp());
+        cliente.setContrasenia(passwordEncoder.encode(request.nombre()+cliente.getWhatsApp()));
         cliente.setEstado(request.estado() != null ? request.estado() : true);
         cliente.setFechaRegistro(LocalDate.now());
         return new ClienteDTO(clienteRepo.save(cliente));
