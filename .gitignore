@@ -21,7 +21,7 @@ kiosco.db
 *.iws
 *.iml
 *.ipr
-
+*.db
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
