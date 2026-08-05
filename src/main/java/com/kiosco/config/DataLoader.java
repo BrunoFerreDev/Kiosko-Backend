@@ -11,6 +11,7 @@ import com.kiosco.utils.CategoriaFileService;
 import com.kiosco.utils.MarcaFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -27,8 +28,10 @@ public class DataLoader implements CommandLineRunner {
     private final ProductoRepo productoRepo;
     private final MarcaFileService marcaFileService;
     private final CategoriaFileService categoriaFileService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
+
     public void run(String... args) throws Exception {
 
         if (clienteRepo.count() == 0) {
@@ -51,6 +54,8 @@ public class DataLoader implements CommandLineRunner {
             c.setWhatsApp("11223344" + i);
             c.setEstado(true);
             c.setFechaRegistro(LocalDate.now());
+            c.setRol("ROLE_CLIENTE");
+            c.setContrasenia(passwordEncoder.encode("123456"));
             clientes.add(c);
         }
         clienteRepo.saveAll(clientes);

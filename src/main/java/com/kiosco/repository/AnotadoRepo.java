@@ -11,11 +11,11 @@ import java.util.List;
 @Repository
 public interface AnotadoRepo extends JpaRepository<Anotado, Long> {
     /*List<Anotado> findByClienteClienteId(Long clienteId);*/
-    List<Anotado> findByClienteClienteIdAndEstadoInOrderByFechaAnotadoAsc(Long clienteId, List<String> estados);
+    List<Anotado> findByClientePersonaIdAndEstadoInOrderByFechaAnotadoAsc(Long clienteId, List<String> estados);
 
     List<Anotado> findTop50ByOrderByFechaAnotadoDesc();
 
-    Page<Anotado> findByClienteClienteId(Long clienteId, Pageable pageable);
+    Page<Anotado> findByClientePersonaId(Long clienteId, Pageable pageable);
 }
 
 

@@ -15,18 +15,20 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-public class Cliente {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long clienteId;
-    private String nombre, apellido;
+@Table(name = "tbl_clientes")
+@PrimaryKeyJoinColumn(name = "personaId")
+public class Cliente extends Persona {
 
-    @Column(unique = true)
-    private String whatsApp;
+    /* @Id
+     @GeneratedValue(strategy = GenerationType.IDENTITY)
+     private Long clienteId;
+     private String nombre, apellido;
 
-    private LocalDate fechaRegistro = LocalDate.now();
-    private Boolean estado;
+     @Column(unique = true)
+     private String whatsApp;
 
+     private LocalDate fechaRegistro = LocalDate.now();
+     private Boolean estado;*/
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Anotado> anotados = new ArrayList<>();
@@ -34,7 +36,4 @@ public class Cliente {
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Pago> pagos = new ArrayList<>();
 
-    public String getNombreCompleto() {
-        return nombre + " " + apellido;
-    }
 }

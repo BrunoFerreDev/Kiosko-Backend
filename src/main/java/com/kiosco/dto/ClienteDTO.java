@@ -22,8 +22,8 @@ public class ClienteDTO {
     private BigDecimal saldoPendiente;
 
     public ClienteDTO(Cliente cliente) {
-        this.clienteId = cliente.getClienteId();
-        this.nombreCompleto = cliente.getNombreCompleto();
+        this.clienteId = cliente.getPersonaId();
+        this.nombreCompleto = cliente.getNombre() + " " + cliente.getApellido();
         this.whatsApp = cliente.getWhatsApp();
         this.estado = cliente.getEstado();
         this.saldoPendiente = calcularSaldoPendiente(cliente);

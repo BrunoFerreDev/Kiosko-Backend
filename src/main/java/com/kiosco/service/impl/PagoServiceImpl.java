@@ -46,13 +46,13 @@ public class PagoServiceImpl implements PagoService {
 
         Pago pagoGuardado = pagoRepo.save(pago);
 
-        distribuirPago(pagoGuardado, cliente.getClienteId(), request.montoAbonado());
+        distribuirPago(pagoGuardado, cliente.getPersonaId(), request.montoAbonado());
 
         return new PagoDTO(pagoGuardado);
     }
 
     private void distribuirPago(Pago pago, Long clienteId, BigDecimal montoDisponible) {
-        List<Anotado> anotadosPendientes = anotadoRepo.findByClienteClienteIdAndEstadoInOrderByFechaAnotadoAsc(
+        List<Anotado> anotadosPendientes = anotadoRepo.findByClientePersonaIdAndEstadoInOrderByFechaAnotadoAsc(
                 clienteId, List.of("PENDIENTE", "PARCIAL"));
 
         BigDecimal saldoRestante = montoDisponible;
