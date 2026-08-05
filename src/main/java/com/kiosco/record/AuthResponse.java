@@ -2,6 +2,6 @@ package com.kiosco.record;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonPropertyOrder({"username", "message", "jwt", "status"})
-public record AuthResponse(String username, String message, String jwt, boolean status) {
+@JsonPropertyOrder({"nombre", "apellido", "whatsapp", "message", "jwt", "status"})
+public record AuthResponse(String nombre, String apellido, String whatsapp, String message, String jwt, boolean status) {
 }

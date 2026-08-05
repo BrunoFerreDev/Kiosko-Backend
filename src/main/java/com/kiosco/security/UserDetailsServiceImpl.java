@@ -68,7 +68,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String rol = authentication.getAuthorities().iterator().next().getAuthority().toString().replace("ROLE_", "");
         String tokenAcceso = jwtUtils.crearToken(authentication, whatsapp, rol);
-        AuthResponse authResponse = new AuthResponse(whatsapp, "login ok", tokenAcceso, true);
+        Persona persona = personaRepo.findByWhatsApp(whatsapp);
+        String nombre = persona != null ? persona.getNombre() : null;
+        String apellido = persona != null ? persona.getApellido() : null;
+        AuthResponse authResponse = new AuthResponse(nombre, apellido, whatsapp, "login ok", tokenAcceso, true);
         return authResponse;
     }
 
