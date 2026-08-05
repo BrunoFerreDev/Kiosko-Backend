@@ -1,5 +1,7 @@
 package com.kiosco.security;
 
+import com.kiosco.model.Administrador;
+import com.kiosco.model.Cliente;
 import com.kiosco.model.Persona;
 import com.kiosco.record.AuthLogin;
 import com.kiosco.record.AuthResponse;
@@ -35,7 +37,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("Usuario no encontrado");
         }
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(persona.getRol()));
+        if (persona instanceof Administrador) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMINISTRADOR"));
+        }
+        if (persona instanceof Cliente) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_CLIENTE"));
+        } else {
+            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        }
         return new User(persona.getWhatsApp(), persona.getContrasenia(), true, true, true, true, authorities);
     }
 
@@ -58,7 +67,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         Authentication authentication = this.authenticate(whatsapp, password);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String rol = authentication.getAuthorities().iterator().next().getAuthority().toString().replace("ROLE_", "");
-        String tokenAcceso = jwtUtils.crearToken(authentication, whatsapp,rol);
+        String tokenAcceso = jwtUtils.crearToken(authentication, whatsapp, rol);
         AuthResponse authResponse = new AuthResponse(whatsapp, "login ok", tokenAcceso, true);
         return authResponse;
     }

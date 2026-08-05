@@ -44,7 +44,6 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(HttpMethod.POST, "/auth/**", "/api/auth/logout").permitAll();
-                    auth.requestMatchers("/web/**", "/api/automation/**").permitAll();
                     auth.requestMatchers(
                             "/api-docs/**",
                             "/swagger-ui.html",
@@ -53,8 +52,8 @@ public class SecurityConfig {
                             "/swagger-resources/**",
                             "/", "/index.html", "/css/**", "/js/**", "/pages/**"
                     ).permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/productos/**", "/categorias/**", "/marcas/**").permitAll();
-                    auth.anyRequest().hasAnyRole("ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/productos/**","/categorias","/marcas").permitAll();
+                    auth.anyRequest().hasAuthority("ADMINISTRADOR");
                 })
                 .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
                 .logout(logout -> logout.logoutUrl("/api/auth/logout")

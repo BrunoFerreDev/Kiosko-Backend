@@ -27,7 +27,6 @@ public class ClienteServiceImpl implements ClienteService {
         cliente.setNombre(request.nombre());
         cliente.setApellido(request.apellido());
         cliente.setWhatsApp(request.whatsApp());
-        cliente.setRol("ROLE_CLIENTE");
         cliente.setEstado(request.estado() != null ? request.estado() : true);
         cliente.setFechaRegistro(LocalDate.now());
         return new ClienteDTO(clienteRepo.save(cliente));

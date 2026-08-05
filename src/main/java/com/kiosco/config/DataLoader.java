@@ -1,11 +1,14 @@
 package com.kiosco.config;
 
 import com.kiosco.UnidadMedida;
+import com.kiosco.model.Administrador;
 import com.kiosco.model.Cliente;
 import com.kiosco.model.Producto;
 import com.kiosco.record.CategoriaR;
 import com.kiosco.record.MarcaR;
+import com.kiosco.repository.AdminRepo;
 import com.kiosco.repository.ClienteRepo;
+import com.kiosco.repository.PersonaRepo;
 import com.kiosco.repository.ProductoRepo;
 import com.kiosco.utils.CategoriaFileService;
 import com.kiosco.utils.MarcaFileService;
@@ -23,7 +26,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
-
+    private final AdminRepo adminRepo;
     private final ClienteRepo clienteRepo;
     private final ProductoRepo productoRepo;
     private final MarcaFileService marcaFileService;
@@ -33,12 +36,14 @@ public class DataLoader implements CommandLineRunner {
     @Override
 
     public void run(String... args) throws Exception {
-
         if (clienteRepo.count() == 0) {
             cargarClientes();
         }
         if (productoRepo.count() == 0) {
             cargarProductos();
+        }
+        if (adminRepo.count() == 0) {
+            cargarAdmins();
         }
     }
 
@@ -54,7 +59,6 @@ public class DataLoader implements CommandLineRunner {
             c.setWhatsApp("11223344" + i);
             c.setEstado(true);
             c.setFechaRegistro(LocalDate.now());
-            c.setRol("ROLE_CLIENTE");
             c.setContrasenia(passwordEncoder.encode("123456"));
             clientes.add(c);
         }
@@ -156,5 +160,15 @@ public class DataLoader implements CommandLineRunner {
             productos.add(p);
         }
         productoRepo.saveAll(productos);
+    }
+
+    private void cargarAdmins() {
+        Administrador administrador = new Administrador();
+        administrador.setNombre("Bruno");
+        administrador.setApellido("Ferreira");
+        administrador.setWhatsApp("3743614796");
+        administrador.setContrasenia(passwordEncoder.encode("123456"));
+        administrador.setEstado(true);
+        adminRepo.save(administrador);
     }
 }

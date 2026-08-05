@@ -1,7 +1,13 @@
 // Main JS entry point for Kiosko-front
+import './components/modal-login.js';
+
 console.log('Mi Kiosko - Web Components Initialized');
 
 // Helper to open modals from anywhere in DOM
+window.openLoginModal = () => {
+  document.querySelector('app-modal-login')?.open();
+};
+
 window.openClientModal = () => {
   document.querySelector('app-modal-client')?.open();
 };

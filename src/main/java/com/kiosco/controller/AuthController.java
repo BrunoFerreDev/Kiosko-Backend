@@ -25,6 +25,7 @@ public class AuthController {
     @Operation(summary = "1. Iniciar Sesión", description = "Devuelve el JWT Token para usar en el botón Authorize")
     // 2. Descripción clara
     public ResponseEntity<AuthResponse> login(@RequestBody AuthLogin login) {
+        System.out.println("User: " + login.whatsapp());
         AuthResponse response = userDetailsService.loginUser(login);
         return ResponseEntity.ok(response);
     }

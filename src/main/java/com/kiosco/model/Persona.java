@@ -19,7 +19,6 @@ public class Persona {
     private Long personaId;
 
     private String nombre, apellido;
-    private String rol;
     private String contrasenia;
     @Column(unique = true)
     private String whatsApp;

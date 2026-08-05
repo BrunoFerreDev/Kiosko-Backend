@@ -17,6 +17,6 @@
 }
 
 /* Web component host defaults */
-app-sidebar, app-topbar, app-modal-client, app-modal-annotation, app-kpi-card {
+app-sidebar, app-topbar, app-modal-client, app-modal-annotation, app-modal-login, app-kpi-card {
   display: block;
 }

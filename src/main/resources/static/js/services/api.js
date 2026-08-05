@@ -2,11 +2,18 @@ const DEFAULT_PAGE_SIZE = 10;
 
 class ApiService {
   static async request(endpoint, options = {}) {
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+
+    const jwt = localStorage.getItem('jwt');
+    if (jwt) {
+      headers['Authorization'] = `Bearer ${jwt}`;
+    }
+
     const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
       ...options,
     };
 
@@ -22,6 +29,11 @@ class ApiService {
       }
 
       if (!response.ok) {
+        if (response.status === 401 && !endpoint.includes('/auth/login')) {
+          localStorage.removeItem('jwt');
+          localStorage.removeItem('username');
+          window.dispatchEvent(new CustomEvent('auth-change'));
+        }
         const errorText = await response.text();
         throw new Error(`HTTP Error ${response.status}: ${errorText || response.statusText}`);
       }
@@ -216,10 +228,45 @@ export const PagosService = {
   delete: (id) => ApiService.request(`/pagos/${id}`, { method: 'DELETE' })
 };
 
+// 5. Auth Service
+export const AuthService = {
+  login: async (whatsapp, contrasenia) => {
+    const response = await ApiService.request('/auth/login', {
+      method: 'POST',
+      body: {
+        whatsapp: whatsapp,
+        contrasenia: contrasenia
+      }
+    });
+    if (response && response.jwt) {
+      localStorage.setItem('jwt', response.jwt);
+      if (response.username) {
+        localStorage.setItem('username', response.username);
+      }
+      window.dispatchEvent(new CustomEvent('auth-change'));
+    }
+    window.location.reload();
+    return response;
+  },
+  logout: () => {
+    localStorage.removeItem('jwt');
+    localStorage.removeItem('username');
+    window.dispatchEvent(new CustomEvent('auth-change'));
+    window.location.reload();
+  },
+  isAuthenticated: () => {
+    return !!localStorage.getItem('jwt');
+  },
+  getUsername: () => {
+    return localStorage.getItem('username') || '';
+  }
+};
+
 // Global export for non-module usage if needed
 window.KioskoAPI = {
   Clientes: ClientesService,
   Productos: ProductosService,
   Anotados: AnotadosService,
-  Pagos: PagosService
+  Pagos: PagosService,
+  Auth: AuthService
 };
