@@ -13,16 +13,19 @@ import com.kiosco.utils.CategoriaFileService;
 import com.kiosco.utils.MarcaFileService;
 import com.kiosco.utils.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -87,19 +90,16 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public ProductoDTO actualizar(Long id, ProductoR request) {
-        Producto producto = productoRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Producto no encontrado con ID: " + id));
+        Producto producto = productoRepo.findById(id).orElseThrow(() -> new NotFoundException("Producto no encontrado con ID: " + id));
 
         // 1. Validar que la marca exista en marcas.json
         if (request.marca() != null) {
-            marcaFileService.buscarPorId(request.marca())
-                    .orElseThrow(() -> new NotFoundException("Marca no encontrada con ID: " + request.marca()));
+            marcaFileService.buscarPorId(request.marca()).orElseThrow(() -> new NotFoundException("Marca no encontrada con ID: " + request.marca()));
         }
 
         // 2. Validar que la categoría exista en categorias.json
         if (request.categoria() != null) {
-            categoriaFileService.buscarPorId(request.categoria())
-                    .orElseThrow(() -> new NotFoundException("Categoría no encontrada con ID: " + request.categoria()));
+            categoriaFileService.buscarPorId(request.categoria()).orElseThrow(() -> new NotFoundException("Categoría no encontrada con ID: " + request.categoria()));
         }
 
         // 3. Asignar atributos
@@ -137,6 +137,84 @@ public class ProductoServiceImpl implements ProductoService {
         String nombreCategoria = categoriaFileService.buscarPorId(producto.getCategoriaId()).map(CategoriaR::nombre).orElse("Sin Categoría");
 
         return new ProductoDTO(producto, nombreMarca, nombreCategoria);
+    }
+
+    @Override
+    public void saveProductsFromExcel(MultipartFile file) {
+        try {
+            List<Producto> products = new ArrayList<>();
+            InputStream inputStream = file.getInputStream();
+            Workbook workbook = new XSSFWorkbook(inputStream);
+            Sheet sheet = workbook.getSheetAt(0);
+
+            DataFormatter formatter = new DataFormatter();
+
+            for (Row row : sheet) {
+                // Saltar la primera fila (encabezados)
+                if (row.getRowNum() == 0) {
+                    continue;
+                }
+
+                Producto product = new Producto();
+
+                // --- COLUMNA B (Índice 1): Nombre ---
+                Cell nombreCell = row.getCell(1);
+                product.setNombre(formatter.formatCellValue(nombreCell));
+
+                // Valores por defecto
+                product.setMarcaId(0L);
+                product.setCategoriaId(0L);
+                product.setUnidadMedida(UnidadMedida.UNIDAD);
+                product.setEstado(true);
+                product.setPrecioCosto(new BigDecimal("0.00"));
+
+                // --- COLUMNA D (Índice 3): Precio Venta ---
+                Cell precioCell = row.getCell(3);
+                if (precioCell != null && precioCell.getCellType() == CellType.NUMERIC) {
+                    product.setPrecioVenta(BigDecimal.valueOf(precioCell.getNumericCellValue()));
+                } else if (precioCell != null) {
+                    // Fallback: Si se lee como texto "4.000", quitamos el punto de los miles antes de convertir a BigDecimal
+                    try {
+                        String precioStr = formatter.formatCellValue(precioCell).replace(".", "");
+                        // Si hubiera decimales con coma, puedes encadenar un .replace(",", ".")
+                        product.setPrecioVenta(new BigDecimal(precioStr));
+                    } catch (NumberFormatException e) {
+                        product.setPrecioVenta(new BigDecimal("0.00"));
+                    }
+                } else {
+                    product.setPrecioVenta(new BigDecimal("0.00"));
+                }
+
+                // --- COLUMNA E (Índice 4): Stock ---
+                Cell stockCell = row.getCell(4);
+                if (stockCell != null && stockCell.getCellType() == CellType.NUMERIC) {
+                    product.setStock((int) stockCell.getNumericCellValue());
+                } else if (stockCell != null) {
+                    try {
+                        // Limpiamos también posibles puntos en el texto del stock
+                        String stockStr = formatter.formatCellValue(stockCell).replace(".", "");
+                        product.setStock(Integer.parseInt(stockStr));
+                    } catch (NumberFormatException e) {
+                        product.setStock(0);
+                    }
+                } else {
+                    product.setStock(0);
+                }
+
+                // Solo agregar a la lista si el nombre existe y no está en blanco
+                if (product.getNombre() != null && !product.getNombre().trim().isEmpty()) {
+                    products.add(product);
+                }
+            }
+
+            workbook.close();
+
+            // Guardar en la base de datos
+            productoRepo.saveAll(products);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
+        }
     }
 }
 

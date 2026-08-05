@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,6 +28,23 @@ public class ProductoController {
     @PostMapping
     public ResponseEntity<ProductoDTO> crear(@RequestBody ProductoR request) {
         return new ResponseEntity<>(productoService.crear(request), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadExcelFile(@RequestParam("file") MultipartFile file) {
+        // Validar que sea un archivo Excel
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Por favor sube un archivo .xlsx válido");
+        }
+
+        try {
+            productoService.saveProductsFromExcel(file);
+            return ResponseEntity.ok("Productos creados exitosamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error procesando el archivo: " + e.getMessage());
+        }
     }
 
     @GetMapping

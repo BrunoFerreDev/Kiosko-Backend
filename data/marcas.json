@@ -1,5 +1,10 @@
 [
   {
+    "id": 0,
+    "codigo": "SA",
+    "nombre": "SIN ASIGNAR"
+  },
+  {
     "id": 1,
     "codigo": "COCA_COLA",
     "nombre": "Coca-Cola"
@@ -7,7 +12,7 @@
   {
     "id": 2,
     "codigo": "ARCOR",
-    "nombre": null
+    "nombre": "ARCOR"
   },
   {
     "id": 3,
