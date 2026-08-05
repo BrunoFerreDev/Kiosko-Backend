@@ -25,3 +25,7 @@ springdoc:
   pageable:
     support-page-request: true
   default-support-page-request: true
+app:
+  storage:
+    categorias-path: "./data/categorias.json"
+    marcas-path: "./data/marcas.json"

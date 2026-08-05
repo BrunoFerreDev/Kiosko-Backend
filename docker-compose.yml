@@ -9,7 +9,7 @@ services:
     environment:
       - PORT=8083
     volumes:
-      - ./kiosco.db:/app/kiosco.db
+      - kiosco-db-data:/app
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8083/actuator/health || exit 1"]
@@ -17,3 +17,7 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+volumes:
+  kiosco-db-data:
+

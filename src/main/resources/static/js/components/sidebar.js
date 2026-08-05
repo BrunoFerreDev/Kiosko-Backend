@@ -68,11 +68,7 @@ class AppSidebar extends HTMLElement {
         </div>
 
         <!-- Footer Links -->
-        <div class="flex flex-col gap-1 mt-auto pt-4 border-t border-outline-variant/30">
-          <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-colors font-medium" href="#">
-            <span class="material-symbols-outlined">logout</span>
-            <span class="font-data-table text-data-table">Cerrar Sesión</span>
-          </a>
+        <div id="sidebar-footer-auth" class="flex flex-col gap-1 mt-auto pt-4 border-t border-outline-variant/30">
         </div>
       </nav>
     `;
@@ -118,6 +114,53 @@ class AppSidebar extends HTMLElement {
     });
 
     document.addEventListener('toggle-mobile-sidebar', () => this.toggleMobile());
+
+    this.updateAuthFooter();
+    this.authListener = () => this.updateAuthFooter();
+    document.addEventListener('auth-change', this.authListener);
+  }
+
+  disconnectedCallback() {
+    if (this.authListener) {
+      document.removeEventListener('auth-change', this.authListener);
+    }
+  }
+
+  updateAuthFooter() {
+    const footer = this.querySelector('#sidebar-footer-auth');
+    if (!footer) return;
+
+    const jwt = localStorage.getItem('jwt');
+    const username = localStorage.getItem('username') || '';
+
+    if (jwt) {
+      footer.innerHTML = `
+        <div class="px-4 py-1.5 text-xs text-on-surface-variant/70 font-semibold truncate flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+          <span>Sesión: ${username}</span>
+        </div>
+        <button id="btn-auth-logout" class="w-full flex items-center gap-3 px-4 py-3 text-error hover:bg-error/10 rounded-lg transition-colors font-medium cursor-pointer text-left">
+          <span class="material-symbols-outlined">logout</span>
+          <span class="font-data-table text-data-table">Cerrar Sesión</span>
+        </button>
+      `;
+      footer.querySelector('#btn-auth-logout')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.KioskoAPI.Auth.logout();
+      });
+    } else {
+      footer.innerHTML = `
+        <button id="btn-auth-login" class="w-full flex items-center gap-3 px-4 py-3 text-primary hover:bg-primary/10 rounded-lg transition-colors font-medium cursor-pointer text-left">
+          <span class="material-symbols-outlined">login</span>
+          <span class="font-data-table text-data-table">Iniciar Sesión</span>
+        </button>
+      `;
+      footer.querySelector('#btn-auth-login')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.closeMobile();
+        document.querySelector('app-modal-login')?.open();
+      });
+    }
   }
 
   toggleMobile() {

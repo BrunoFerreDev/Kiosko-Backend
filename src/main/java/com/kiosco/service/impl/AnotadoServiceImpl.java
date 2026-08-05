@@ -79,7 +79,7 @@ public class AnotadoServiceImpl implements AnotadoService {
     @Override
     public Page<AnotadoDTO> obtenerPorCliente(Long clienteId, Pageable pageable) {
         Pageable pageableSeguro = sanearPageable(pageable);
-        return anotadoRepo.findByClienteClienteId(clienteId, pageableSeguro)
+        return anotadoRepo.findByClientePersonaId(clienteId, pageableSeguro)
                 .map(AnotadoDTO::new);
     }
 
@@ -111,7 +111,7 @@ public class AnotadoServiceImpl implements AnotadoService {
 
         Map<Long, List<Anotado>> agrupados = recientes.stream()
                 .collect(Collectors.groupingBy(
-                        a -> a.getCliente() != null ? a.getCliente().getClienteId() : 0L,
+                        a -> a.getCliente() != null ? a.getCliente().getPersonaId() : 0L,
                         LinkedHashMap::new,
                         Collectors.toList()
                 ));
@@ -122,7 +122,7 @@ public class AnotadoServiceImpl implements AnotadoService {
                 .limit(max)
                 .map(lista -> {
                     Anotado primero = lista.get(0);
-                    String clienteNombre = primero.getCliente() != null ? primero.getCliente().getNombreCompleto() : "Cliente Desconocido";
+                    String clienteNombre = primero.getCliente() != null ? primero.getCliente().getNombre() + " " + primero.getCliente().getApellido() : "Cliente Desconocido";
 
                     String productosNombres = lista.stream()
                             .map(a -> a.getProducto() != null ? a.getProducto().getNombre() : "Producto")

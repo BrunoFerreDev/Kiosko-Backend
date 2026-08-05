@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
@@ -17,12 +18,12 @@ public class ClienteDTO {
     private Long clienteId;
     private String nombreCompleto, whatsApp;
     private Boolean estado;
-    private LocalDateTime fechaRegistro;
+    private LocalDate fechaRegistro;
     private BigDecimal saldoPendiente;
 
     public ClienteDTO(Cliente cliente) {
-        this.clienteId = cliente.getClienteId();
-        this.nombreCompleto = cliente.getNombreCompleto();
+        this.clienteId = cliente.getPersonaId();
+        this.nombreCompleto = cliente.getNombre() + " " + cliente.getApellido();
         this.whatsApp = cliente.getWhatsApp();
         this.estado = cliente.getEstado();
         this.saldoPendiente = calcularSaldoPendiente(cliente);

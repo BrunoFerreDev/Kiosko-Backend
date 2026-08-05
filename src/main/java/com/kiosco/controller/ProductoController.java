@@ -11,7 +11,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -28,25 +30,27 @@ public class ProductoController {
         return new ResponseEntity<>(productoService.crear(request), HttpStatus.CREATED);
     }
 
-    @GetMapping(value = "/categorias")
-    public ResponseEntity<List<String>> obtenerCategorias() {
-        return ResponseEntity.ok(productoService.obtenerCategorias());
-    }
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadExcelFile(@RequestParam("file") MultipartFile file) {
+        // Validar que sea un archivo Excel
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Por favor sube un archivo .xlsx válido");
+        }
 
-    @GetMapping(value = "/marcas")
-    public ResponseEntity<List<String>> obtenerMarcas() {
-        return ResponseEntity.ok(productoService.obtenerMarcas());
+        try {
+            productoService.saveProductsFromExcel(file);
+            return ResponseEntity.ok("Productos creados exitosamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error procesando el archivo: " + e.getMessage());
+        }
     }
 
     @GetMapping
     public ResponseEntity<Page<ProductoDTO>> obtenerTodos(@ParameterObject @PageableDefault(size = 10, sort = "fechaRegistro", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(productoService.obtenerPaginado(pageable));
     }
-
-   /* @GetMapping("/paginado")
-    public ResponseEntity<Page<ProductoDTO>> obtenerPaginado(@PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productoService.obtenerPaginado(pageable));
-    }*/
 
     @GetMapping("/buscar")
     public ResponseEntity<Page<ProductoDTO>> buscar(@RequestParam(required = false) String nombre, @RequestParam(required = false) String marca, @RequestParam(required = false) String categoria, @RequestParam(required = false) BigDecimal precioMin, @RequestParam(required = false) BigDecimal precioMax, @ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {

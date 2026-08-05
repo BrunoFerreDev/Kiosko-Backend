@@ -15,11 +15,11 @@ public interface ProductoRepo extends JpaRepository<Producto, Long>, JpaSpecific
     List<Producto> findByEstadoTrue();
     Page<Producto> findByEstadoTrue(Pageable pageable);
 
-    @Query("SELECT DISTINCT p.categoria FROM Producto p")
+  /*  @Query("SELECT DISTINCT p.categoria FROM Producto p")
     List<String> findCategoriasUnicas();
 
     @Query("SELECT DISTINCT p.marca FROM Producto p")
-    List<String> findMarcasUnicas();
+    List<String> findMarcasUnicas();*/
 }
 
 

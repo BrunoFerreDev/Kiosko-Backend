@@ -23,6 +23,8 @@ class AppTableProducts extends HTMLElement {
     // Listen for product creation or updates to reload list
     document.addEventListener('product-created', () => this.loadData());
     document.addEventListener('product-updated', () => this.loadData());
+    document.addEventListener('brand-created', () => this.loadBrands().then(() => this.render()));
+    document.addEventListener('category-created', () => this.loadCategories().then(() => this.render()));
 
     this.renderSkeleton();
     this.initFiltersAndLoad();
@@ -53,7 +55,9 @@ class AppTableProducts extends HTMLElement {
   async loadCategories() {
     try {
       const resp = await ProductosService.getCategorias();
-      this.categories = Array.isArray(resp) ? resp : [];
+      this.categories = Array.isArray(resp)
+        ? resp.map(cat => typeof cat === 'object' && cat !== null ? (cat.nombre || cat.codigo || '') : cat).filter(Boolean)
+        : [];
     } catch (err) {
       console.warn('No se pudieron cargar categorías para el filtro:', err);
       this.categories = ['Bebidas', 'Almacén', 'Lácteos y Fiambres', 'Golosinas y Snacks'];
@@ -63,7 +67,9 @@ class AppTableProducts extends HTMLElement {
   async loadBrands() {
     try {
       const resp = await ProductosService.getMarcas();
-      this.brands = Array.isArray(resp) ? resp : [];
+      this.brands = Array.isArray(resp)
+        ? resp.map(brand => typeof brand === 'object' && brand !== null ? (brand.nombre || brand.codigo || '') : brand).filter(Boolean)
+        : [];
     } catch (err) {
       console.warn('No se pudieron cargar marcas para el filtro:', err);
       this.brands = [];
@@ -107,9 +113,9 @@ class AppTableProducts extends HTMLElement {
     } catch (err) {
       console.warn('API de productos no disponible o vacía, usando datos fallback:', err);
       this.products = [
-        { productoId: 1, nombre: 'Coca Cola 2.25L', marca: 'Coca-Cola', categoria: 'Bebidas', precioCosto: 950, precioVenta: 1400, stock: 24, estado: true },
-        { productoId: 2, nombre: 'Leche Entera 1L (Sachet)', marca: 'La Serenísima', categoria: 'Lácteos y Fiambres', precioCosto: 320, precioVenta: 450, stock: 2, estado: true },
-        { productoId: 3, nombre: 'Pan Lactal Grande', marca: 'Bimbo', categoria: 'Almacén', precioCosto: 650, precioVenta: 980, stock: 10, estado: true }
+        { productoId: 1, nombre: 'Coca Cola 2.25L', marca: 'Coca-Cola', categoria: 'Bebidas', precioCosto: 950, precioVenta: 1400, stock: 24, estado: true, unidadMedida: 'unidad' },
+        { productoId: 2, nombre: 'Leche Entera 1L (Sachet)', marca: 'La Serenísima', categoria: 'Lácteos y Fiambres', precioCosto: 320, precioVenta: 450, stock: 2, estado: true, unidadMedida: 'litro' },
+        { productoId: 3, nombre: 'Pan Lactal Grande', marca: 'Bimbo', categoria: 'Almacén', precioCosto: 650, precioVenta: 980, stock: 10, estado: true, unidadMedida: 'unidad' }
       ];
       this.totalPages = 1;
       this.totalElements = 3;
@@ -160,21 +166,43 @@ class AppTableProducts extends HTMLElement {
     const brandOptionsHtml = `<option value="" ${this.marcaFilter === '' ? 'selected' : ''}>Todas las Marcas</option>` +
       this.brands.map(brand => `<option value="${brand}" ${this.marcaFilter === brand ? 'selected' : ''}>${brand}</option>`).join('');
 
-    const rowsHtml = this.products.map(prod => `
+    const rowsHtml = this.products.map(prod => {
+      const brandName = prod.marca
+        ? (typeof prod.marca === 'object' ? prod.marca.nombre : prod.marca)
+        : '';
+      const catName = prod.categoria
+        ? (typeof prod.categoria === 'object' ? prod.categoria.nombre : prod.categoria)
+        : 'Sin Categoría';
+
+      const getUnidadAbbr = (unidad) => {
+        const u = String(unidad || '').toLowerCase();
+        switch (u) {
+          case 'kilogramo':
+          case 'kg':
+            return 'kg';
+          case 'unidad': return 'unidad';
+          case 'decena': return 'decena';
+          case 'litro': return 'litro';
+          case 'caja': return 'caja';
+          default: return 'unidad';
+        }
+      };
+
+      return `
       <tr class="border-b border-outline-variant/10 hover:bg-surface-container-lowest/50 transition-colors">
         <td class="px-4 sm:px-6 py-4">
           <div class="font-semibold text-on-surface text-sm sm:text-base">${prod.nombre}</div>
-          ${prod.marca ? `<div class="text-xs text-on-surface-variant">Marca: ${prod.marca}</div>` : ''}
+          ${brandName ? `<div class="text-xs text-on-surface-variant">Marca: ${brandName}</div>` : ''}
         </td>
         <td class="px-4 sm:px-6 py-4">
-          <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-xs font-semibold bg-primary-container/30 text-primary">${prod.categoria || 'Sin Categoría'}</span>
+          <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-xs font-semibold bg-primary-container/30 text-primary">${catName}</span>
         </td>
         <!-- Hidden on Mobile -->
         <td class="hidden sm:table-cell px-6 py-4 text-right text-on-surface-variant">$${(prod.precioCosto || 0).toLocaleString('es-AR')}</td>
         <td class="px-4 sm:px-6 py-4 text-right font-bold text-on-surface text-sm sm:text-base">$${(prod.precioVenta || 0).toLocaleString('es-AR')}</td>
         <td class="px-4 sm:px-6 py-4 text-center">
           <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-bold ${prod.stock <= 5 ? 'bg-error-container text-error' : 'bg-emerald-100 text-emerald-800'}">
-            ${prod.stock} un.
+            ${prod.stock} ${getUnidadAbbr(prod.unidadMedida)}
           </span>
         </td>
         <td class="px-4 sm:px-6 py-4 text-right">
@@ -194,7 +222,8 @@ class AppTableProducts extends HTMLElement {
           </div>
         </td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
 
     this.innerHTML = `
       <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden flex flex-col">
@@ -414,9 +443,11 @@ class AppTableProducts extends HTMLElement {
             id: prod.productoId,
             name: prod.nombre,
             category: prod.categoria,
+            brand: prod.marca,
             costPrice: prod.precioCosto,
             sellPrice: prod.precioVenta,
-            stock: prod.stock
+            stock: prod.stock,
+            unidadMedida: prod.unidadMedida
           });
         }
       });

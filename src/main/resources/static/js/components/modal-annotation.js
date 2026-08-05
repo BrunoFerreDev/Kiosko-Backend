@@ -50,7 +50,10 @@ class AppModalAnnotation extends HTMLElement {
 
     if (prodSelect) {
       prodSelect.innerHTML = `<option value="">-- Elegir producto del catálogo --</option>` +
-        this.availableProducts.map(p => `<option value="${p.productoId}">${p.nombre} [${p.categoria || 'Sin Cat.'}] - $${(p.precioVenta || 0).toLocaleString('es-AR')}</option>`).join('');
+        this.availableProducts.map(p => {
+          const catName = p.categoria ? (typeof p.categoria === 'object' ? p.categoria.nombre : p.categoria) : 'Sin Cat.';
+          return `<option value="${p.productoId}">${p.nombre} [${catName}] - $${(p.precioVenta || 0).toLocaleString('es-AR')}</option>`;
+        }).join('');
     }
   }
 
@@ -282,7 +285,10 @@ class AppModalAnnotation extends HTMLElement {
         prodSelect.innerHTML = `<option value="">No se encontraron productos para "${trimmed}"</option>`;
       } else {
         prodSelect.innerHTML = `<option value="">-- Elegir producto del catálogo (${deduplicated.length}) --</option>` +
-          deduplicated.map(p => `<option value="${p.productoId}">${p.nombre} [${p.categoria || 'Sin Cat.'}] - $${(p.precioVenta || 0).toLocaleString('es-AR')}</option>`).join('');
+          deduplicated.map(p => {
+            const catName = p.categoria ? (typeof p.categoria === 'object' ? p.categoria.nombre : p.categoria) : 'Sin Cat.';
+            return `<option value="${p.productoId}">${p.nombre} [${catName}] - $${(p.precioVenta || 0).toLocaleString('es-AR')}</option>`;
+          }).join('');
       }
     } catch (err) {
       console.warn('Error al buscar productos en backend:', err);
@@ -309,7 +315,7 @@ class AppModalAnnotation extends HTMLElement {
     if (existingIndex >= 0) {
       this.items[existingIndex].qty += qty;
     } else {
-      this.items.push({ id: prod.productoId, name: prod.nombre, price, qty });
+      this.items.push({ id: prod.productoId, name: prod.nombre, price, qty, unidadMedida: prod.unidadMedida });
     }
 
     select.value = '';
@@ -341,11 +347,30 @@ class AppModalAnnotation extends HTMLElement {
         </div>
       `;
     } else {
+      const getUnidadAbbr = (unidad) => {
+        const u = String(unidad || '').toLowerCase();
+        switch (u) {
+          case 'kilogramo':
+          case 'kg':
+            return 'kg';
+          case 'unidad':
+            return 'unidad';
+          case 'decena':
+            return 'decena';
+          case 'litro':
+            return 'litro';
+          case 'caja':
+            return 'caja';
+          default:
+            return 'un.';
+        }
+      };
+
       this.itemsContainer.innerHTML = this.items.map((item, idx) => `
         <div class="flex items-center justify-between p-3 hover:bg-surface-container-low transition-colors">
           <div>
             <p class="font-semibold text-on-surface text-sm">${item.name}</p>
-            <p class="text-xs text-on-surface-variant">$${item.price.toLocaleString('es-AR')} x ${item.qty} un.</p>
+            <p class="text-xs text-on-surface-variant">$${item.price.toLocaleString('es-AR')} x ${item.qty} ${getUnidadAbbr(item.unidadMedida)}</p>
           </div>
           <div class="flex items-center gap-3">
             <span class="font-bold text-on-surface text-sm">$${(item.price * item.qty).toLocaleString('es-AR')}</span>
