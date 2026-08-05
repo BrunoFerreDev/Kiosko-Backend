@@ -14,6 +14,14 @@ window.openProductModal = (productData = null) => {
   document.querySelector('app-modal-product')?.open(productData);
 };
 
+window.openBrandModal = () => {
+  document.querySelector('app-modal-brand')?.open();
+};
+
+window.openCategoryModal = () => {
+  document.querySelector('app-modal-category')?.open();
+};
+
 window.openPaymentModal = (clienteId = null, amount = 0) => {
   document.querySelector('app-modal-payment')?.open(clienteId, amount);
 };

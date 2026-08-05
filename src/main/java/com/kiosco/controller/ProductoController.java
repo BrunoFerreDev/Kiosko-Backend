@@ -28,25 +28,10 @@ public class ProductoController {
         return new ResponseEntity<>(productoService.crear(request), HttpStatus.CREATED);
     }
 
-    @GetMapping(value = "/categorias")
-    public ResponseEntity<List<String>> obtenerCategorias() {
-        return ResponseEntity.ok(productoService.obtenerCategorias());
-    }
-
-    @GetMapping(value = "/marcas")
-    public ResponseEntity<List<String>> obtenerMarcas() {
-        return ResponseEntity.ok(productoService.obtenerMarcas());
-    }
-
     @GetMapping
     public ResponseEntity<Page<ProductoDTO>> obtenerTodos(@ParameterObject @PageableDefault(size = 10, sort = "fechaRegistro", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(productoService.obtenerPaginado(pageable));
     }
-
-   /* @GetMapping("/paginado")
-    public ResponseEntity<Page<ProductoDTO>> obtenerPaginado(@PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(productoService.obtenerPaginado(pageable));
-    }*/
 
     @GetMapping("/buscar")
     public ResponseEntity<Page<ProductoDTO>> buscar(@RequestParam(required = false) String nombre, @RequestParam(required = false) String marca, @RequestParam(required = false) String categoria, @RequestParam(required = false) BigDecimal precioMin, @RequestParam(required = false) BigDecimal precioMax, @ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {

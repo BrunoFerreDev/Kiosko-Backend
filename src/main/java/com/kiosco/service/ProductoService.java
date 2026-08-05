@@ -17,9 +17,9 @@ public interface ProductoService {
     ProductoDTO actualizar(Long id, ProductoR request);
     void eliminar(Long id);
 
-    List<String> obtenerCategorias();
+   /* List<String> obtenerCategorias();
 
-    List<String> obtenerMarcas();
+    List<String> obtenerMarcas();*/
 }
 
 

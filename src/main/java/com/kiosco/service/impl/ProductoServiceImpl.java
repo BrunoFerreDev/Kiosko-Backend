@@ -1,11 +1,16 @@
 package com.kiosco.service.impl;
 
+import com.kiosco.UnidadMedida;
 import com.kiosco.dto.ProductoDTO;
 import com.kiosco.model.Producto;
+import com.kiosco.record.CategoriaR;
+import com.kiosco.record.MarcaR;
 import com.kiosco.record.ProductoR;
 import com.kiosco.repository.ProductoRepo;
 import com.kiosco.service.ProductoService;
 import com.kiosco.utils.BadRequestException;
+import com.kiosco.utils.CategoriaFileService;
+import com.kiosco.utils.MarcaFileService;
 import com.kiosco.utils.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -22,29 +28,32 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ProductoServiceImpl implements ProductoService {
     private final ProductoRepo productoRepo;
+    private final MarcaFileService marcaFileService;
+    private final CategoriaFileService categoriaFileService;
 
     @Override
     public ProductoDTO crear(ProductoR request) {
         Producto producto = new Producto();
         producto.setNombre(request.nombre());
-        producto.setMarca(request.marca());
-        producto.setCategoria(request.categoria());
+        producto.setMarcaId(request.marca());
+        producto.setCategoriaId(request.categoria());
         producto.setPrecioCosto(request.precioCosto());
         producto.setPrecioVenta(request.precioVenta());
         producto.setStock(request.stock());
-        producto.setFechaRegistro(LocalDateTime.now());
+        producto.setUnidadMedida(UnidadMedida.fromString(request.unidadMedida()));
+        producto.setFechaRegistro(LocalDate.now());
         producto.setEstado(request.estado() != null ? request.estado() : true);
-        return new ProductoDTO(productoRepo.save(producto));
+        return toDTO(productoRepo.save(producto));
     }
 
     @Override
     public List<ProductoDTO> obtenerTodos() {
-        return productoRepo.findByEstadoTrue().stream().map(ProductoDTO::new).toList();
+        return productoRepo.findByEstadoTrue().stream().map(this::toDTO).toList();
     }
 
     @Override
     public Page<ProductoDTO> obtenerPaginado(Pageable pageable) {
-        return productoRepo.findByEstadoTrue(pageable).map(ProductoDTO::new);
+        return productoRepo.findByEstadoTrue(pageable).map(this::toDTO);
     }
 
     @Override
@@ -67,28 +76,46 @@ public class ProductoServiceImpl implements ProductoService {
             spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("precioVenta"), precioMax));
         }
 
-        return productoRepo.findAll(spec, pageable).map(ProductoDTO::new);
+        return productoRepo.findAll(spec, pageable).map(this::toDTO);
     }
 
     @Override
     public ProductoDTO obtenerPorId(Long id) {
         Producto producto = productoRepo.findById(id).orElseThrow(() -> new NotFoundException("Producto no encontrado con ID: " + id));
-        return new ProductoDTO(producto);
+        return toDTO(producto);
     }
 
     @Override
     public ProductoDTO actualizar(Long id, ProductoR request) {
-        Producto producto = productoRepo.findById(id).orElseThrow(() -> new NotFoundException("Producto no encontrado con ID: " + id));
+        Producto producto = productoRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Producto no encontrado con ID: " + id));
+
+        // 1. Validar que la marca exista en marcas.json
+        if (request.marca() != null) {
+            marcaFileService.buscarPorId(request.marca())
+                    .orElseThrow(() -> new NotFoundException("Marca no encontrada con ID: " + request.marca()));
+        }
+
+        // 2. Validar que la categoría exista en categorias.json
+        if (request.categoria() != null) {
+            categoriaFileService.buscarPorId(request.categoria())
+                    .orElseThrow(() -> new NotFoundException("Categoría no encontrada con ID: " + request.categoria()));
+        }
+
+        // 3. Asignar atributos
         producto.setNombre(request.nombre());
-        producto.setMarca(request.marca());
-        producto.setCategoria(request.categoria());
+        producto.setMarcaId(request.marca());
+        producto.setCategoriaId(request.categoria());
         producto.setPrecioCosto(request.precioCosto());
         producto.setPrecioVenta(request.precioVenta());
         producto.setStock(request.stock());
+        producto.setUnidadMedida(UnidadMedida.fromString(request.unidadMedida()));
         if (request.estado() != null) {
             producto.setEstado(request.estado());
         }
-        return new ProductoDTO(productoRepo.save(producto));
+
+        Producto productoGuardado = productoRepo.save(producto);
+        return toDTO(productoGuardado);
     }
 
     @Override
@@ -104,14 +131,12 @@ public class ProductoServiceImpl implements ProductoService {
         productoRepo.save(producto);
     }
 
-    @Override
-    public List<String> obtenerCategorias() {
-        return productoRepo.findCategoriasUnicas();
-    }
+    private ProductoDTO toDTO(Producto producto) {
+        String nombreMarca = marcaFileService.buscarPorId(producto.getMarcaId()).map(MarcaR::nombre).orElse("Sin Marca");
 
-    @Override
-    public List<String> obtenerMarcas() {
-        return productoRepo.findMarcasUnicas();
+        String nombreCategoria = categoriaFileService.buscarPorId(producto.getCategoriaId()).map(CategoriaR::nombre).orElse("Sin Categoría");
+
+        return new ProductoDTO(producto, nombreMarca, nombreCategoria);
     }
 }
 

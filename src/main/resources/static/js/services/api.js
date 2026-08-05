@@ -1,4 +1,3 @@
-const API_BASE_URL = '';
 const DEFAULT_PAGE_SIZE = 10;
 
 class ApiService {
@@ -16,7 +15,7 @@ class ApiService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+      const response = await fetch(`${endpoint}`, config);
 
       if (response.status === 204) {
         return { success: true };
@@ -101,9 +100,28 @@ export const ProductosService = {
     return ApiService.request(`/productos/buscar?${params.toString()}`);
   },
 
-  getCategorias: () => ApiService.request('/productos/categorias'),
+  getCategorias: () => ApiService.request('/categorias'),
 
-  getMarcas: () => ApiService.request('/productos/marcas'),
+  getMarcas: () => ApiService.request('/marcas'),
+
+  createCategory: (data) => ApiService.request('/categorias', {
+    method: 'POST',
+    body: {
+      id: null,
+      codigo: data.codigo || '',
+      nombre: data.nombre || '',
+      descripcion: data.descripcion || ''
+    }
+  }),
+
+  createBrand: (data) => ApiService.request('/marcas', {
+    method: 'POST',
+    body: {
+      id: null,
+      codigo: data.codigo || '',
+      nombre: data.nombre || ''
+    }
+  }),
 
   getById: (id) => ApiService.request(`/productos/${id}`),
 
@@ -111,12 +129,13 @@ export const ProductosService = {
     method: 'POST',
     body: {
       nombre: data.nombre || data.name || '',
-      marca: data.marca || '',
-      categoria: data.categoria || data.category || 'Otros',
+      marca: data.marca ? parseInt(data.marca, 10) : null,
+      categoria: data.categoria ? parseInt(data.categoria, 10) : null,
       precioCosto: parseFloat(data.precioCosto || data.costPrice || 0),
       precioVenta: parseFloat(data.precioVenta || data.sellPrice || 0),
       stock: parseInt(data.stock || 0, 10),
-      estado: data.estado !== undefined ? data.estado : true
+      estado: data.estado !== undefined ? data.estado : true,
+      unidadMedida: data.unidadMedida || 'unidad'
     }
   }),
 
@@ -124,12 +143,13 @@ export const ProductosService = {
     method: 'PUT',
     body: {
       nombre: data.nombre || data.name || '',
-      marca: data.marca || '',
-      categoria: data.categoria || data.category || 'Otros',
+      marca: data.marca ? parseInt(data.marca, 10) : null,
+      categoria: data.categoria ? parseInt(data.categoria, 10) : null,
       precioCosto: parseFloat(data.precioCosto || data.costPrice || 0),
       precioVenta: parseFloat(data.precioVenta || data.sellPrice || 0),
       stock: parseInt(data.stock || 0, 10),
-      estado: data.estado !== undefined ? data.estado : true
+      estado: data.estado !== undefined ? data.estado : true,
+      unidadMedida: data.unidadMedida || 'unidad'
     }
   }),
 

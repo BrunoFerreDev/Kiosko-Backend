@@ -13,7 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -28,7 +28,7 @@ public class ClienteServiceImpl implements ClienteService {
         cliente.setApellido(request.apellido());
         cliente.setWhatsApp(request.whatsApp());
         cliente.setEstado(request.estado() != null ? request.estado() : true);
-        cliente.setFechaRegistro(LocalDateTime.now());
+        cliente.setFechaRegistro(LocalDate.now());
         return new ClienteDTO(clienteRepo.save(cliente));
     }
 

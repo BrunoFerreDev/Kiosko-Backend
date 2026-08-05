@@ -102,17 +102,26 @@ class AppTableHistory extends HTMLElement {
 
       const formattedAnotados = rawAnotados.map(a => {
         const prodName = a.producto?.nombre || 'Producto';
-        const brand = a.producto?.marca ? ` (${a.producto.marca})` : '';
+        const brandObj = a.producto?.marca;
+        const brandName = brandObj
+          ? (typeof brandObj === 'object' ? brandObj.nombre : brandObj)
+          : '';
+        const brand = brandName ? ` (${brandName})` : '';
         const unitPrice = a.precioUnitario || a.producto?.precioVenta || 0;
         const qty = a.cantidad || 1;
         const totalLine = unitPrice * qty;
+
+        const catObj = a.producto?.categoria;
+        const catName = catObj
+          ? (typeof catObj === 'object' ? catObj.nombre : catObj)
+          : 'General';
 
         return {
           type: 'anotado',
           id: a.anotadoId,
           date: a.fechaAnotado || new Date().toISOString(),
           desc: `${prodName}${brand} x${qty}`,
-          sub: `Cat: ${a.producto?.categoria || 'General'} | Estado: ${a.estado || 'PENDIENTE'}`,
+          sub: `Cat: ${catName} | Estado: ${a.estado || 'PENDIENTE'}`,
           monto: totalLine,
           isPago: false,
           rawItem: a
@@ -273,7 +282,7 @@ class AppTableHistory extends HTMLElement {
               <input type="checkbox" data-anotado-id="${m.id}" ${isChecked ? 'checked' : ''} class="chk-select-item w-4 h-4 text-primary rounded border-outline-variant focus:ring-primary cursor-pointer" />
             ` : ''}
           </td>
-
+          
           <td class="px-2 sm:px-4 py-3 sm:py-4 whitespace-nowrap text-on-surface-variant font-medium text-xs">
             <span class="sm:hidden font-semibold">${dateShort}</span>
             <span class="hidden sm:inline">${dateFull}</span>
@@ -306,7 +315,7 @@ class AppTableHistory extends HTMLElement {
 
     this.innerHTML = `
       <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
-
+        
         <!-- Header Toolbar -->
         <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-outline-variant/30 bg-surface/50 flex flex-col sm:flex-row justify-between items-center gap-3">
           <h3 class="font-headline-sm text-base sm:text-headline-sm text-on-background font-bold">
@@ -358,10 +367,10 @@ class AppTableHistory extends HTMLElement {
         </div>
 
         <!-- Pagination Component -->
-        <app-pagination
-          current-page="${this.page}"
-          total-pages="${this.totalPages}"
-          total-elements="${this.totalElements}"
+        <app-pagination 
+          current-page="${this.page}" 
+          total-pages="${this.totalPages}" 
+          total-elements="${this.totalElements}" 
           page-size="${this.size}">
         </app-pagination>
       </div>

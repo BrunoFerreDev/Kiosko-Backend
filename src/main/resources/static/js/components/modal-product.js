@@ -3,7 +3,20 @@ import { ProductosService } from '../services/api.js';
 class AppModalProduct extends HTMLElement {
   connectedCallback() {
     this.categories = [];
+    this.brands = [];
+
+    // Auto-reload dropdown lists when a new brand or category is created
+    document.addEventListener('brand-created', () => this.loadBrands());
+    document.addEventListener('category-created', () => this.loadCategories());
+
     this.render();
+  }
+
+  async loadDropdowns() {
+    await Promise.all([
+      this.loadCategories(),
+      this.loadBrands()
+    ]);
   }
 
   async loadCategories() {
@@ -12,9 +25,24 @@ class AppModalProduct extends HTMLElement {
       this.categories = Array.isArray(resp) ? resp : [];
     } catch (err) {
       console.warn('No se pudieron cargar categorías de la API, usando por defecto:', err);
-      this.categories = ['Bebidas', 'Almacén', 'Lácteos y Fiambres', 'Golosinas y Snacks', 'Cigarrillos', 'Otros'];
+      this.categories = ['Bebidas', 'Almacén', 'Lácteos y Fiambres', 'Golosinas y Snacks', 'Cigarrillos', 'Otros'].map((name, i) => ({
+        id: i + 1,
+        nombre: name,
+        codigo: name.toLowerCase().replace(/\s+/g, '-')
+      }));
     }
     this.updateCategoryOptions();
+  }
+
+  async loadBrands() {
+    try {
+      const resp = await ProductosService.getMarcas();
+      this.brands = Array.isArray(resp) ? resp : [];
+    } catch (err) {
+      console.warn('No se pudieron cargar marcas de la API, usando por defecto:', err);
+      this.brands = [];
+    }
+    this.updateBrandOptions();
   }
 
   updateCategoryOptions() {
@@ -22,18 +50,45 @@ class AppModalProduct extends HTMLElement {
     if (!select) return;
 
     if (this.categories.length === 0) {
-      select.innerHTML = `
-        <option value="Bebidas">Bebidas</option>
-        <option value="Almacén">Almacén</option>
-        <option value="Lácteos y Fiambres">Lácteos y Fiambres</option>
-        <option value="Golosinas y Snacks">Golosinas y Snacks</option>
-        <option value="Otros">Otros</option>
-      `;
+      select.innerHTML = '<option value="">Sin Categorías</option>';
     } else {
-      select.innerHTML = this.categories.map(cat =>
-        `<option value="${cat}">${cat}</option>`
-      ).join('');
+      select.innerHTML = this.categories.map(cat => {
+        const id = typeof cat === 'object' && cat !== null ? cat.id : cat;
+        const nombre = typeof cat === 'object' && cat !== null ? cat.nombre : cat;
+        return `<option value="${id}">${nombre}</option>`;
+      }).join('');
     }
+  }
+
+  updateBrandOptions() {
+    const select = this.querySelector('#prod-brand');
+    if (!select) return;
+
+    if (this.brands.length === 0) {
+      select.innerHTML = '<option value="">Sin Marcas disponible</option>';
+    } else {
+      select.innerHTML = `<option value="">Seleccionar Marca</option>` + this.brands.map(brand => {
+        const id = typeof brand === 'object' && brand !== null ? brand.id : brand;
+        const nombre = typeof brand === 'object' && brand !== null ? brand.nombre : brand;
+        return `<option value="${id}">${nombre}</option>`;
+      }).join('');
+    }
+  }
+
+  resolveCategoryId(categoryField) {
+    if (!categoryField) return '';
+    if (typeof categoryField === 'object') return categoryField.id || '';
+    if (!isNaN(categoryField) && categoryField !== '') return String(categoryField);
+    const found = this.categories.find(c => c.nombre === categoryField || c.codigo === categoryField);
+    return found ? String(found.id) : '';
+  }
+
+  resolveBrandId(brandField) {
+    if (!brandField) return '';
+    if (typeof brandField === 'object') return brandField.id || '';
+    if (!isNaN(brandField) && brandField !== '') return String(brandField);
+    const found = this.brands.find(b => b.nombre === brandField || b.codigo === brandField);
+    return found ? String(found.id) : '';
   }
 
   render() {
@@ -66,20 +121,31 @@ class AppModalProduct extends HTMLElement {
               <input type="text" name="nombre" id="prod-name" required placeholder="Ej: Coca Cola 2.25L" class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md" />
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Marca</label>
-                <input type="text" name="marca" id="prod-brand" placeholder="Ej: Coca-Cola" class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md" />
-              </div>
-              <div>
-                <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Categoría *</label>
-                <select name="categoria" id="prod-category" required class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md">
-                  <option value="">Cargando categorías...</option>
+            <div>
+              <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Marca</label>
+              <div class="flex gap-2">
+                <select name="marca" id="prod-brand" class="flex-1 h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md">
+                  <option value="">Cargando marcas...</option>
                 </select>
+                <button type="button" onclick="openBrandModal()" title="Nueva Marca" class="w-11 h-11 rounded-xl border border-outline-variant flex items-center justify-center text-primary hover:bg-surface-container-high cursor-pointer transition-colors">
+                  <span class="material-symbols-outlined text-sm">add</span>
+                </button>
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Categoría *</label>
+              <div class="flex gap-2">
+                <select name="categoria" id="prod-category" required class="flex-1 h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md">
+                  <option value="">Cargando categorías...</option>
+                </select>
+                <button type="button" onclick="openCategoryModal()" title="Nueva Categoría" class="w-11 h-11 rounded-xl border border-outline-variant flex items-center justify-center text-primary hover:bg-surface-container-high cursor-pointer transition-colors">
+                  <span class="material-symbols-outlined text-sm">add</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Precio Costo ($)</label>
                 <input type="number" name="precioCosto" id="prod-cost" placeholder="0.00" min="0" step="any" class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md" />
@@ -88,9 +154,22 @@ class AppModalProduct extends HTMLElement {
                 <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Precio Venta ($) *</label>
                 <input type="number" name="precioVenta" id="prod-price" required placeholder="0.00" min="0" step="any" class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md" />
               </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Stock Actual *</label>
                 <input type="number" name="stock" id="prod-stock" required placeholder="0" min="0" class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md" />
+              </div>
+              <div>
+                <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Unidad de Medida *</label>
+                <select name="unidadMedida" id="prod-unit" required class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md">
+                  <option value="unidad">Unidad (unidad)</option>
+                  <option value="kg">Kilogramo (kg)</option>
+                  <option value="decena">Decena (decena)</option>
+                  <option value="litro">Litro (litro)</option>
+                  <option value="caja">Caja (caja)</option>
+                </select>
               </div>
             </div>
 
@@ -169,23 +248,29 @@ class AppModalProduct extends HTMLElement {
     }
   }
 
-  open(productData = null) {
-    this.loadCategories();
+  async open(productData = null) {
     this.form.reset();
+    
+    // Set loading options text in select controls before load finishes
+    const selectCat = this.querySelector('#prod-category');
+    if (selectCat) selectCat.innerHTML = '<option value="">Cargando categorías...</option>';
+    const selectBrand = this.querySelector('#prod-brand');
+    if (selectBrand) selectBrand.innerHTML = '<option value="">Cargando marcas...</option>';
+
     if (productData) {
       this.titleEl.textContent = 'Editar Producto';
       this.submitTextEl.textContent = 'Guardar Cambios';
       this.querySelector('#prod-id').value = productData.id || productData.productoId || '';
       this.querySelector('#prod-name').value = productData.nombre || productData.name || '';
-      this.querySelector('#prod-brand').value = productData.marca || '';
-      this.querySelector('#prod-category').value = productData.categoria || productData.category || '';
       this.querySelector('#prod-cost').value = productData.precioCosto || productData.costPrice || '';
       this.querySelector('#prod-price').value = productData.precioVenta || productData.sellPrice || '';
       this.querySelector('#prod-stock').value = productData.stock || '0';
+      this.querySelector('#prod-unit').value = productData.unidadMedida || 'unidad';
     } else {
       this.titleEl.textContent = 'Registrar Producto';
       this.submitTextEl.textContent = 'Guardar Producto';
       this.querySelector('#prod-id').value = '';
+      this.querySelector('#prod-unit').value = 'unidad';
     }
 
     this.backdrop?.classList.remove('hidden');
@@ -193,6 +278,17 @@ class AppModalProduct extends HTMLElement {
       this.modalContent?.classList.remove('scale-95', 'opacity-0');
       this.modalContent?.classList.add('scale-100', 'opacity-100');
     }, 10);
+
+    // Wait for dropdowns to be populated
+    await this.loadDropdowns();
+
+    if (productData) {
+      const catId = this.resolveCategoryId(productData.categoria || productData.category);
+      const brandId = this.resolveBrandId(productData.marca || productData.brand || productData.marcaId);
+
+      if (selectCat) selectCat.value = catId;
+      if (selectBrand) selectBrand.value = brandId;
+    }
   }
 
   close() {

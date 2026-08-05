@@ -167,10 +167,10 @@ class AppTableClients extends HTMLElement {
         </div>
 
         <!-- Pagination Component -->
-        <app-pagination
-          current-page="${this.page}"
-          total-pages="${this.totalPages}"
-          total-elements="${this.totalElements}"
+        <app-pagination 
+          current-page="${this.page}" 
+          total-pages="${this.totalPages}" 
+          total-elements="${this.totalElements}" 
           page-size="${this.size}">
         </app-pagination>
       </div>

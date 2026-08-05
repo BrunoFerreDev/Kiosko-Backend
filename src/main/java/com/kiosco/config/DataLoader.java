@@ -1,14 +1,20 @@
 package com.kiosco.config;
 
+import com.kiosco.UnidadMedida;
 import com.kiosco.model.Cliente;
 import com.kiosco.model.Producto;
+import com.kiosco.record.CategoriaR;
+import com.kiosco.record.MarcaR;
 import com.kiosco.repository.ClienteRepo;
 import com.kiosco.repository.ProductoRepo;
+import com.kiosco.utils.CategoriaFileService;
+import com.kiosco.utils.MarcaFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,17 +25,12 @@ public class DataLoader implements CommandLineRunner {
 
     private final ClienteRepo clienteRepo;
     private final ProductoRepo productoRepo;
+    private final MarcaFileService marcaFileService;
+    private final CategoriaFileService categoriaFileService;
 
     @Override
     public void run(String... args) throws Exception {
-        for (Producto p : productoRepo.findAll()) {
-            p.setFechaRegistro(LocalDateTime.now());
-            productoRepo.save(p);
-        }
-        for (Cliente c : clienteRepo.findAll()) {
-            c.setFechaRegistro(LocalDateTime.now());
-            clienteRepo.save(c);
-        }
+
         if (clienteRepo.count() == 0) {
             cargarClientes();
         }
@@ -49,6 +50,7 @@ public class DataLoader implements CommandLineRunner {
             c.setApellido(apellidos[i]);
             c.setWhatsApp("11223344" + i);
             c.setEstado(true);
+            c.setFechaRegistro(LocalDate.now());
             clientes.add(c);
         }
         clienteRepo.saveAll(clientes);
@@ -120,14 +122,32 @@ public class DataLoader implements CommandLineRunner {
         };
 
         for (Object[] item : datosProductos) {
+            String nombreMarca = (String) item[1];
+            String nombreCategoria = (String) item[2];
+
+            Long marcaId = marcaFileService.obtenerTodas().stream()
+                    .filter(m -> m.nombre() != null && m.nombre().equalsIgnoreCase(nombreMarca))
+                    .map(MarcaR::id)
+                    .findFirst()
+                    .orElse(null);
+
+            // 2. Buscar el ID de la Categoría en categorias.json por su nombre
+            Long categoriaId = categoriaFileService.obtenerTodas().stream()
+                    .filter(c -> c.nombre().equalsIgnoreCase(nombreCategoria))
+                    .map(CategoriaR::id)
+                    .findFirst()
+                    .orElse(null); // O asignar un ID por defecto si no existe
+
             Producto p = new Producto();
             p.setNombre((String) item[0]);
-            p.setMarca((String) item[1]);
-            p.setCategoria((String) item[2]);
+            p.setMarcaId(marcaId);         // Pasamos el Long marcaId
+            p.setCategoriaId(categoriaId); // Pasamos el Long categoriaId
             p.setPrecioCosto((BigDecimal) item[3]);
             p.setPrecioVenta((BigDecimal) item[4]);
             p.setStock((Integer) item[5]);
             p.setEstado(true);
+            p.setUnidadMedida(UnidadMedida.UNIDAD);
+            p.setFechaRegistro(LocalDate.now());
             productos.add(p);
         }
         productoRepo.saveAll(productos);

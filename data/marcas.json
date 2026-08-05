@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "codigo": "COCA_COLA",
+    "nombre": "Coca-Cola"
+  },
+  {
+    "id": 2,
+    "codigo": "ARCOR",
+    "nombre": null
+  },
+  {
+    "id": 3,
+    "codigo": "PEPSICO",
+    "nombre": "PepsiCo"
+  },
+  {
+    "id": 4,
+    "codigo": "LA_SERENISIMA",
+    "nombre": "La Serenísima"
+  },
+  {
+    "id": 5,
+    "codigo": "MARLBORO",
+    "nombre": "Marlboro"
+  },
+  {
+    "id": 6,
+    "codigo": "BAGLEY",
+    "nombre": "Bagley"
+  },
+  {
+    "id": 7,
+    "codigo": "MONTECATINNI",
+    "nombre": "Montecatinni"
+  }
+]
