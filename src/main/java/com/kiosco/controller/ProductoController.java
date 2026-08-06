@@ -9,7 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +46,27 @@ public class ProductoController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error procesando el archivo: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportExcelFile() {
+        try {
+            // Generar el archivo en bytes
+            byte[] excelContent = productoService.exportProductsToExcel();
+
+            // Configurar los headers para la descarga del archivo
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=productos_exportados.xlsx");
+
+            return ResponseEntity.ok()
+                    // Indicamos el tipo de contenido (MIME type) para archivos .xlsx
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .headers(headers)
+                    .body(excelContent);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 

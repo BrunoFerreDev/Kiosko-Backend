@@ -21,6 +21,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -214,6 +216,77 @@ public class ProductoServiceImpl implements ProductoService {
 
         } catch (Exception e) {
             throw new RuntimeException("Error al procesar el archivo Excel: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public byte[] exportProductsToExcel() {
+        // 1. Obtener todos los productos de la BD
+        List<Producto> productos = productoRepo.findAll();
+
+        // 2. Crear el libro y la hoja de Excel
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            Sheet sheet = workbook.createSheet("Productos");
+
+            // 3. Crear un estilo para el encabezado (Fondo azul, texto blanco y negrita)
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            Font headerFont = workbook.createFont();
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            // 4. Crear la fila de encabezados (Fila 0)
+            Row headerRow = sheet.createRow(0);
+
+            // Columna B (Índice 1) -> Nombre
+            Cell cellNombre = headerRow.createCell(1);
+            cellNombre.setCellValue("Nombre");
+            cellNombre.setCellStyle(headerStyle);
+
+            // Columna D (Índice 3) -> Precio Venta
+            Cell cellPrecio = headerRow.createCell(3);
+            cellPrecio.setCellValue("Precio Venta");
+            cellPrecio.setCellStyle(headerStyle);
+
+            // Columna E (Índice 4) -> Stock
+            Cell cellStock = headerRow.createCell(4);
+            cellStock.setCellValue("Stock");
+            cellStock.setCellStyle(headerStyle);
+
+            // 5. Llenar los datos de los productos
+            int rowIdx = 1; // Comenzamos en la fila 1
+            for (Producto producto : productos) {
+                Row row = sheet.createRow(rowIdx++);
+
+                // Columna B (1): Nombre
+                row.createCell(1).setCellValue(producto.getNombre());
+
+                // Columna D (3): Precio Venta (Convertimos BigDecimal a double para Excel)
+                if (producto.getPrecioVenta() != null) {
+                    row.createCell(3).setCellValue(producto.getPrecioVenta().doubleValue());
+                } else {
+                    row.createCell(3).setCellValue(0.0);
+                }
+
+                // Columna E (4): Stock
+                row.createCell(4).setCellValue(producto.getStock());
+            }
+
+            // 6. Ajustar el ancho de las columnas automáticamente para que se vea bien
+            sheet.autoSizeColumn(1);
+            sheet.autoSizeColumn(3);
+            sheet.autoSizeColumn(4);
+
+            // 7. Escribir los datos en el ByteArrayOutputStream
+            workbook.write(out);
+            return out.toByteArray();
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error al exportar los datos a Excel: " + e.getMessage());
         }
     }
 }
