@@ -159,26 +159,22 @@ public class ProductoServiceImpl implements ProductoService {
 
                 Producto product = new Producto();
 
-                // --- COLUMNA B (Índice 1): Nombre ---
-                Cell nombreCell = row.getCell(1);
+                // --- COLUMNA A (Índice 0): Nombre ---
+                Cell nombreCell = row.getCell(0);
                 product.setNombre(formatter.formatCellValue(nombreCell));
 
-                // Valores por defecto
-                product.setMarcaId(0L);
-                product.setCategoriaId(0L);
+                // Valores por defecto de configuración
                 product.setUnidadMedida(UnidadMedida.UNIDAD);
                 product.setEstado(true);
                 product.setPrecioCosto(new BigDecimal("0.00"));
 
-                // --- COLUMNA D (Índice 3): Precio Venta ---
-                Cell precioCell = row.getCell(3);
+                // --- COLUMNA B (Índice 1): Precio Venta ---
+                Cell precioCell = row.getCell(1);
                 if (precioCell != null && precioCell.getCellType() == CellType.NUMERIC) {
                     product.setPrecioVenta(BigDecimal.valueOf(precioCell.getNumericCellValue()));
                 } else if (precioCell != null) {
-                    // Fallback: Si se lee como texto "4.000", quitamos el punto de los miles antes de convertir a BigDecimal
                     try {
                         String precioStr = formatter.formatCellValue(precioCell).replace(".", "");
-                        // Si hubiera decimales con coma, puedes encadenar un .replace(",", ".")
                         product.setPrecioVenta(new BigDecimal(precioStr));
                     } catch (NumberFormatException e) {
                         product.setPrecioVenta(new BigDecimal("0.00"));
@@ -187,13 +183,12 @@ public class ProductoServiceImpl implements ProductoService {
                     product.setPrecioVenta(new BigDecimal("0.00"));
                 }
 
-                // --- COLUMNA E (Índice 4): Stock ---
-                Cell stockCell = row.getCell(4);
+                // --- COLUMNA C (Índice 2): Stock ---
+                Cell stockCell = row.getCell(2);
                 if (stockCell != null && stockCell.getCellType() == CellType.NUMERIC) {
                     product.setStock((int) stockCell.getNumericCellValue());
                 } else if (stockCell != null) {
                     try {
-                        // Limpiamos también posibles puntos en el texto del stock
                         String stockStr = formatter.formatCellValue(stockCell).replace(".", "");
                         product.setStock(Integer.parseInt(stockStr));
                     } catch (NumberFormatException e) {
@@ -201,6 +196,33 @@ public class ProductoServiceImpl implements ProductoService {
                     }
                 } else {
                     product.setStock(0);
+                }
+
+                // --- COLUMNA D (Índice 3): Marca ID ---
+                Cell marcaCell = row.getCell(3);
+                String marcaStr = formatter.formatCellValue(marcaCell).trim();
+                if (marcaStr.isEmpty()) {
+                    product.setMarcaId(0L);
+                } else {
+                    try {
+                        // Limpiamos posibles formatos decimales o puntos antes de convertir a Long
+                        product.setMarcaId(Long.parseLong(marcaStr.replace(".", "").replace(",", "")));
+                    } catch (NumberFormatException e) {
+                        product.setMarcaId(0L); // Asigna 0L si ocurre un error al leer
+                    }
+                }
+
+                // --- COLUMNA E (Índice 4): Categoría ID ---
+                Cell categoriaCell = row.getCell(4);
+                String categoriaStr = formatter.formatCellValue(categoriaCell).trim();
+                if (categoriaStr.isEmpty()) {
+                    product.setCategoriaId(0L);
+                } else {
+                    try {
+                        product.setCategoriaId(Long.parseLong(categoriaStr.replace(".", "").replace(",", "")));
+                    } catch (NumberFormatException e) {
+                        product.setCategoriaId(0L); // Asigna 0L si ocurre un error al leer
+                    }
                 }
 
                 // Solo agregar a la lista si el nombre existe y no está en blanco
@@ -221,16 +243,14 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public byte[] exportProductsToExcel() {
-        // 1. Obtener todos los productos de la BD
         List<Producto> productos = productoRepo.findAll();
 
-        // 2. Crear el libro y la hoja de Excel
         try (Workbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
             Sheet sheet = workbook.createSheet("Productos");
 
-            // 3. Crear un estilo para el encabezado (Fondo azul, texto blanco y negrita)
+            // 1. Crear el estilo para el encabezado
             CellStyle headerStyle = workbook.createCellStyle();
             headerStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -239,49 +259,73 @@ public class ProductoServiceImpl implements ProductoService {
             headerFont.setBold(true);
             headerStyle.setFont(headerFont);
 
-            // 4. Crear la fila de encabezados (Fila 0)
+            // 2. Crear la fila de encabezados (Fila 0)
             Row headerRow = sheet.createRow(0);
 
-            // Columna B (Índice 1) -> Nombre
-            Cell cellNombre = headerRow.createCell(1);
+            // Columna A (Índice 0) -> Nombre
+            Cell cellNombre = headerRow.createCell(0);
             cellNombre.setCellValue("Nombre");
             cellNombre.setCellStyle(headerStyle);
 
-            // Columna D (Índice 3) -> Precio Venta
-            Cell cellPrecio = headerRow.createCell(3);
+            // Columna B (Índice 1) -> Precio Venta
+            Cell cellPrecio = headerRow.createCell(1);
             cellPrecio.setCellValue("Precio Venta");
             cellPrecio.setCellStyle(headerStyle);
 
-            // Columna E (Índice 4) -> Stock
-            Cell cellStock = headerRow.createCell(4);
+            // Columna C (Índice 2) -> Stock
+            Cell cellStock = headerRow.createCell(2);
             cellStock.setCellValue("Stock");
             cellStock.setCellStyle(headerStyle);
 
-            // 5. Llenar los datos de los productos
-            int rowIdx = 1; // Comenzamos en la fila 1
+            // Columna D (Índice 3) -> Marca
+            Cell cellMarca = headerRow.createCell(3);
+            cellMarca.setCellValue("Marca");
+            cellMarca.setCellStyle(headerStyle);
+
+            // Columna E (Índice 4) -> Categoría
+            Cell cellCategoria = headerRow.createCell(4);
+            cellCategoria.setCellValue("Categoría");
+            cellCategoria.setCellStyle(headerStyle);
+
+            // 3. Llenar los datos de los productos
+            int rowIdx = 1;
             for (Producto producto : productos) {
                 Row row = sheet.createRow(rowIdx++);
 
-                // Columna B (1): Nombre
-                row.createCell(1).setCellValue(producto.getNombre());
+                // Columna A (0): Nombre
+                row.createCell(0).setCellValue(producto.getNombre());
 
-                // Columna D (3): Precio Venta (Convertimos BigDecimal a double para Excel)
+                // Columna B (1): Precio Venta
                 if (producto.getPrecioVenta() != null) {
-                    row.createCell(3).setCellValue(producto.getPrecioVenta().doubleValue());
+                    row.createCell(1).setCellValue(producto.getPrecioVenta().doubleValue());
                 } else {
-                    row.createCell(3).setCellValue(0.0);
+                    row.createCell(1).setCellValue(0.0);
                 }
 
-                // Columna E (4): Stock
-                row.createCell(4).setCellValue(producto.getStock());
+                // Columna C (2): Stock
+                row.createCell(2).setCellValue(producto.getStock());
+
+                // Columna D (3): Marca ID
+                if (producto.getMarcaId() != null) {
+                    row.createCell(3).setCellValue(producto.getMarcaId());
+                } else {
+                    row.createCell(3).setCellValue(0);
+                }
+
+                // Columna E (4): Categoría ID
+                if (producto.getCategoriaId() != null) {
+                    row.createCell(4).setCellValue(producto.getCategoriaId());
+                } else {
+                    row.createCell(4).setCellValue(0);
+                }
             }
 
-            // 6. Ajustar el ancho de las columnas automáticamente para que se vea bien
-            sheet.autoSizeColumn(1);
-            sheet.autoSizeColumn(3);
-            sheet.autoSizeColumn(4);
+            // 4. Ajustar el ancho de las columnas automáticamente (0 al 4)
+            for (int i = 0; i <= 4; i++) {
+                sheet.autoSizeColumn(i);
+            }
 
-            // 7. Escribir los datos en el ByteArrayOutputStream
+            // 5. Escribir y retornar
             workbook.write(out);
             return out.toByteArray();
 
