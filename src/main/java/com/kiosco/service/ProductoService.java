@@ -20,6 +20,8 @@ public interface ProductoService {
 
     void saveProductsFromExcel(MultipartFile file);
 
+    byte[] exportProductsToExcel();
+
    /* List<String> obtenerCategorias();
 
     List<String> obtenerMarcas();*/

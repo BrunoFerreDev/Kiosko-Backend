@@ -50,6 +50,36 @@ window.setTodayDate = () => {
   }
 };
 
+window.exportProducts = async (buttonElement) => {
+  if (!buttonElement) return;
+  const originalHtml = buttonElement.innerHTML;
+  buttonElement.disabled = true;
+  buttonElement.classList.add('opacity-50', 'cursor-not-allowed');
+  buttonElement.innerHTML = `
+    <span class="animate-spin material-symbols-outlined text-sm">sync</span>
+    <span>Exportando...</span>
+  `;
+  
+  try {
+    const blob = await window.KioskoAPI.Productos.exportExcel();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'productos_exportados.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error(err);
+    alert('Error al exportar productos: ' + err.message);
+  } finally {
+    buttonElement.disabled = false;
+    buttonElement.classList.remove('opacity-50', 'cursor-not-allowed');
+    buttonElement.innerHTML = originalHtml;
+  }
+};
+
 window.updateActionVisibility = () => {
   const isAdmin = window.KioskoAPI?.Auth?.isAdmin();
   document.querySelectorAll('.admin-only').forEach(el => {

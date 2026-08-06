@@ -190,6 +190,22 @@ export const ProductosService = {
       method: 'POST',
       body: formData
     });
+  },
+
+  exportExcel: async () => {
+    const headers = {};
+    const jwt = localStorage.getItem('jwt');
+    if (jwt) {
+      headers['Authorization'] = `Bearer ${jwt}`;
+    }
+    const response = await fetch('/productos/export', {
+      method: 'GET',
+      headers
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+    }
+    return await response.blob();
   }
 };
 
