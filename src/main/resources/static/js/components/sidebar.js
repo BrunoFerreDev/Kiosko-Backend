@@ -33,15 +33,20 @@ class AppSidebar extends HTMLElement {
 
       <!-- Navigation Drawer Container -->
       <nav id="sidebar-drawer" class="bg-surface-container-low shadow-sm h-full w-64 fixed left-0 top-0 flex flex-col py-gutter px-4 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out border-r border-outline-variant/20">
+        <!-- Brand Logo Image -->
+        <div class="relative w-full p-3 rounded-2xl shadow-sm border border-outline-variant/25 flex justify-center items-center mb-4 mt-2 shrink-0 transition-all duration-300 hover:shadow-md hover:scale-[1.02]">
+          <img src="${basePath}css/pipitos.webp" alt="Los Pipitos" class="max-h-20 w-auto object-contain" />
+        </div>
+
         <!-- Header -->
-        <div class="flex items-center justify-between px-2 mb-6 mt-2">
+        <div class="flex items-center justify-between px-2 mb-6 mt-1">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-primary-container text-primary flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined fill">storefront</span>
+            <div class="w-8 h-8 rounded-lg bg-primary-container text-primary flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined fill text-sm">storefront</span>
             </div>
             <div>
-              <h2 class="font-headline-md text-headline-md font-bold text-primary">Mi Kiosko</h2>
-              <p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Comercio Local</p>
+              <h2 class="font-headline-md text-base font-bold text-primary">Los Pipitos</h2>
+              <p class="font-label-caps text-[10px] text-on-surface-variant uppercase">Kiosco de Barrio</p>
             </div>
           </div>
           <button id="btn-close-sidebar" class="md:hidden w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-variant cursor-pointer">
