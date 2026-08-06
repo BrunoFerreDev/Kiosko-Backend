@@ -28,17 +28,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
     private final AdminRepo adminRepo;
-    private final ClienteRepo clienteRepo;
-    private final ProductoRepo productoRepo;
     private final MarcaFileService marcaFileService;
     private final CategoriaFileService categoriaFileService;
     private final PasswordEncoder passwordEncoder;
-    private final PersonaRepo personaRepo;
 
     @Override
-
     public void run(String... args) throws Exception {
-
+        cargarCategorias();
+        cargarMarcas();
         if (adminRepo.count() == 0) {
             cargarAdmins();
         }
@@ -70,5 +67,28 @@ public class DataLoader implements CommandLineRunner {
         adminRepo.save(adminBruno);
         adminRepo.save(adminSol);
         adminRepo.save(adminIsabel);
+    }
+
+    private void cargarCategorias() {
+        if (categoriaFileService.obtenerTodas().isEmpty()) {
+            categoriaFileService.crearCategoria("BEBIDAS", "Bebidas y Gaseosas", "Gaseosas, aguas, jugos y aguas saborizadas");
+            categoriaFileService.crearCategoria("GOLOSINAS", "Golosinas y Chocolates", "Alfajores, caramelos, chicles y chocolates");
+            categoriaFileService.crearCategoria("ALMACEN", "Almacén y Galletitas", "Yerba, azúcar, galletitas dulces y saladas, fideos");
+            categoriaFileService.crearCategoria("CIGARRILLOS", "Cigarrillos y Tabaco", "Atados de cigarrillos, encendedores y sedas");
+            categoriaFileService.crearCategoria("FIAMBRERIA", "Fiambrería y Lácteos", "Quesos, fiambres, yogures, leches y manteca");
+            categoriaFileService.crearCategoria("CASERO", "Comidas Caseras", "Comidas caseeras, pizza, hamburguesa");
+        }
+    }
+
+    private void cargarMarcas() {
+        if (marcaFileService.obtenerTodas().isEmpty()) {
+            marcaFileService.crearMarca("COCA_COLA", "Coca-Cola");
+            marcaFileService.crearMarca("PEPSICO", "PepsiCo");
+            marcaFileService.crearMarca("ARCOR", "Arcor");
+            marcaFileService.crearMarca("BAGLEY", "Bagley");
+            marcaFileService.crearMarca("LA_SERENISIMA", "La Serenísima");
+            marcaFileService.crearMarca("MARLBORO", "Marlboro");
+            marcaFileService.crearMarca("MONTECATINI", "Montecatini");
+        }
     }
 }
