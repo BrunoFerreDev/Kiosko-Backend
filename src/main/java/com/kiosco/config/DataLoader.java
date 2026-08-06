@@ -39,15 +39,6 @@ public class DataLoader implements CommandLineRunner {
 
     public void run(String... args) throws Exception {
 
-        Persona personaSol = personaRepo.findByWhatsApp("3743582264");
-        personaSol.setContrasenia(passwordEncoder.encode("41091041"));
-        personaRepo.save(personaSol);
-
-        Persona personaBruno = personaRepo.findByWhatsApp("3743614796");
-        personaBruno.setContrasenia(passwordEncoder.encode("41091041"));
-        personaRepo.save(personaBruno);
-
-
         if (adminRepo.count() == 0) {
             cargarAdmins();
         }
@@ -59,21 +50,21 @@ public class DataLoader implements CommandLineRunner {
         adminBruno.setNombre("Bruno");
         adminBruno.setApellido("Ferreira");
         adminBruno.setWhatsApp("3743614796");
-        adminBruno.setContrasenia(passwordEncoder.encode("123456"));
+        adminBruno.setContrasenia(passwordEncoder.encode("42273555"));
         adminBruno.setEstado(true);
 
         Administrador adminSol = new Administrador();
         adminSol.setNombre("Sol Angeles");
         adminSol.setApellido("Ferreira");
         adminSol.setWhatsApp("3743582264");
-        adminSol.setContrasenia(passwordEncoder.encode("123456"));
+        adminSol.setContrasenia(passwordEncoder.encode("41091041"));
         adminSol.setEstado(true);
 
         Administrador adminIsabel = new Administrador();
         adminIsabel.setNombre("Ana Isabel");
         adminIsabel.setApellido("Pittana");
         adminIsabel.setWhatsApp("3743445199");
-        adminIsabel.setContrasenia(passwordEncoder.encode("123456"));
+        adminIsabel.setContrasenia(passwordEncoder.encode("17807819"));
         adminIsabel.setEstado(true);
 
         adminRepo.save(adminBruno);
