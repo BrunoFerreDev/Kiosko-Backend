@@ -2,13 +2,17 @@ spring:
   application:
     name: kiosco
   datasource:
-    url: jdbc:sqlite:kiosco.db?journal_mode=WAL&busy_timeout=5000
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 1
-    username:
-    password:
+      maximum-pool-size: 4
+      minimun-idle: 2
+      connection-timeout: 600000
+      max-lifetime: 1800000
   jpa:
-    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     properties:
