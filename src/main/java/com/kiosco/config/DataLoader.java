@@ -3,6 +3,7 @@ package com.kiosco.config;
 import com.kiosco.UnidadMedida;
 import com.kiosco.model.Administrador;
 import com.kiosco.model.Cliente;
+import com.kiosco.model.Persona;
 import com.kiosco.model.Producto;
 import com.kiosco.record.CategoriaR;
 import com.kiosco.record.MarcaR;
@@ -32,10 +33,20 @@ public class DataLoader implements CommandLineRunner {
     private final MarcaFileService marcaFileService;
     private final CategoriaFileService categoriaFileService;
     private final PasswordEncoder passwordEncoder;
+    private final PersonaRepo personaRepo;
 
     @Override
 
     public void run(String... args) throws Exception {
+
+        Persona personaSol = personaRepo.findByWhatsApp("3743582264");
+        personaSol.setContrasenia(passwordEncoder.encode("41091041"));
+        personaRepo.save(personaSol);
+
+        Persona personaBruno = personaRepo.findByWhatsApp("3743614796");
+        personaBruno.setContrasenia(passwordEncoder.encode("41091041"));
+        personaRepo.save(personaBruno);
+
 
         if (adminRepo.count() == 0) {
             cargarAdmins();
