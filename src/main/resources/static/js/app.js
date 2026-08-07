@@ -114,3 +114,22 @@ if (document.readyState === 'loading') {
 }
 
 setTodayDate();
+
+// Redirection logic for unauthenticated users
+const checkSessionAndRedirect = () => {
+  const isUnauthenticated = !localStorage.getItem('jwt');
+  if (isUnauthenticated) {
+    const path = window.location.pathname;
+    const filename = path.split('/').pop();
+    const isDashboard = filename === '' || filename === 'index.html';
+    const isClients = filename === 'clientes.html' || filename === 'cliente-detalle.html';
+    
+    if (isDashboard) {
+      window.location.href = 'pages/productos.html';
+    } else if (isClients) {
+      window.location.href = 'productos.html';
+    }
+  }
+};
+
+checkSessionAndRedirect();
