@@ -213,7 +213,7 @@ export const ProductosService = {
 export const AnotadosService = {
   getAll: () => ApiService.request('/anotados'),
 
-  getPaged: (page = 0, size = DEFAULT_PAGE_SIZE) => ApiService.request(`/anotados/paginado?page=${page}&size=${DEFAULT_PAGE_SIZE}`),
+  getPaged: (page = 0, size = DEFAULT_PAGE_SIZE) => ApiService.request(`/anotados?page=${page}&size=${size}`),
 
   getByCliente: (clienteId, page = 0, size = 15, sort = '') => {
     const params = new URLSearchParams({ page, size });
@@ -267,6 +267,61 @@ export const PagosService = {
   }),
 
   delete: (id) => ApiService.request(`/pagos/${id}`, { method: 'DELETE' })
+};
+
+// 5. MenuDiarios Service
+export const MenuDiariosService = {
+  getPaged: (params = {}) => {
+    const urlParams = new URLSearchParams();
+    urlParams.append('page', params.page !== undefined ? params.page : 0);
+    urlParams.append('size', params.size || 9);
+    if (params.fecha) urlParams.append('fecha', params.fecha);
+    return ApiService.request(`/menus-diarios?${urlParams.toString()}`);
+  },
+
+  getAll: () => ApiService.request('/menus-diarios?size=100'),
+
+  getById: (id) => ApiService.request(`/menus-diarios/${id}`),
+
+  create: (data) => ApiService.request('/menus-diarios', {
+    method: 'POST',
+    body: data
+  }),
+
+  update: (id, data) => ApiService.request(`/menus-diarios/${id}`, {
+    method: 'PUT',
+    body: data
+  }),
+
+  delete: (id) => ApiService.request(`/menus-diarios/${id}`, { method: 'DELETE' })
+};
+
+// 6. Combos Service
+export const CombosService = {
+  getPaged: (params = {}) => {
+    const urlParams = new URLSearchParams();
+    urlParams.append('page', params.page !== undefined ? params.page : 0);
+    urlParams.append('size', params.size || 9);
+    return ApiService.request(`/combos?${urlParams.toString()}`);
+  },
+
+  getAll: () => ApiService.request('/combos'),
+
+  getActivos: () => ApiService.request('/combos/activos'),
+
+  getById: (id) => ApiService.request(`/combos/${id}`),
+
+  create: (data) => ApiService.request('/combos', {
+    method: 'POST',
+    body: data
+  }),
+
+  update: (id, data) => ApiService.request(`/combos/${id}`, {
+    method: 'PUT',
+    body: data
+  }),
+
+  delete: (id) => ApiService.request(`/combos/${id}`, { method: 'DELETE' })
 };
 
 const decodeJwt = (token) => {
@@ -369,11 +424,53 @@ export const AuthService = {
   }
 };
 
+// 7. AnotadosCombo Service
+export const AnotadosComboService = {
+  create: (data) => ApiService.request('/anotados-combo', {
+    method: 'POST',
+    body: {
+      cantidad: parseInt(data.cantidad || 1, 10),
+      precioUnitario: parseFloat(data.precioUnitario || 0),
+      fechaAnotado: data.fechaAnotado || new Date().toISOString(),
+      estado: data.estado || 'PENDIENTE',
+      clienteId: parseInt(data.clienteId, 10),
+      comboId: parseInt(data.comboId, 10)
+    }
+  }),
+  getPaged: (page = 0, size = DEFAULT_PAGE_SIZE) => ApiService.request(`/anotados-combo?page=${page}&size=${size}`),
+  getByCliente: (clienteId, page = 0, size = 15) => ApiService.request(`/anotados-combo/cliente/${clienteId}?page=${page}&size=${size}`),
+  delete: (id) => ApiService.request(`/anotados-combo/${id}`, { method: 'DELETE' }),
+  marcarComoPagado: (id, metodoPago = 'EFECTIVO') => ApiService.request(`/anotados-combo/${id}/pagar?metodoPago=${metodoPago}`, { method: 'PUT' })
+};
+
+// 8. AnotadosMenu Service
+export const AnotadosMenuService = {
+  create: (data) => ApiService.request('/anotados-menu', {
+    method: 'POST',
+    body: {
+      cantidad: parseInt(data.cantidad || 1, 10),
+      precioUnitario: parseFloat(data.precioUnitario || 0),
+      fechaAnotado: data.fechaAnotado || new Date().toISOString(),
+      estado: data.estado || 'PENDIENTE',
+      clienteId: parseInt(data.clienteId, 10),
+      menuDiarioId: parseInt(data.menuDiarioId, 10)
+    }
+  }),
+  getPaged: (page = 0, size = DEFAULT_PAGE_SIZE) => ApiService.request(`/anotados-menu?page=${page}&size=${size}`),
+  getByCliente: (clienteId, page = 0, size = 15) => ApiService.request(`/anotados-menu/cliente/${clienteId}?page=${page}&size=${size}`),
+  delete: (id) => ApiService.request(`/anotados-menu/${id}`, { method: 'DELETE' }),
+  marcarComoPagado: (id, metodoPago = 'EFECTIVO') => ApiService.request(`/anotados-menu/${id}/pagar?metodoPago=${metodoPago}`, { method: 'PUT' })
+};
+
 // Global export for non-module usage if needed
 window.KioskoAPI = {
   Clientes: ClientesService,
   Productos: ProductosService,
   Anotados: AnotadosService,
   Pagos: PagosService,
-  Auth: AuthService
+  Auth: AuthService,
+  MenuDiarios: MenuDiariosService,
+  Combos: CombosService,
+  AnotadosCombo: AnotadosComboService,
+  AnotadosMenu: AnotadosMenuService
 };

@@ -1,6 +1,6 @@
 package com.kiosco.repository;
 
-import com.kiosco.model.Administrador;
+import com.kiosco.model.subModel.Administrador;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

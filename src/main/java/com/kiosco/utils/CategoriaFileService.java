@@ -64,6 +64,14 @@ public class CategoriaFileService {
         return categorias.stream().filter(c -> c.id().equals(id)).findFirst();
     }
 
+    public List<Long> buscarIdsPorNombre(String nombre) {
+        String lower = nombre.toLowerCase();
+        return categorias.stream()
+                .filter(c -> c.nombre() != null && c.nombre().toLowerCase().contains(lower))
+                .map(CategoriaR::id)
+                .toList();
+    }
+
     public synchronized CategoriaR crearCategoria(String codigo, String nombre, String descripcion) {
         Long nuevoId = categorias.stream().mapToLong(CategoriaR::id).max().orElse(0L) + 1;
         CategoriaR nueva = new CategoriaR(nuevoId, codigo.toUpperCase(), nombre, descripcion);

@@ -3,8 +3,11 @@ package com.kiosco.service.impl;
 import com.kiosco.dto.ActividadRecienteDTO;
 import com.kiosco.dto.AnotadoDTO;
 import com.kiosco.model.Anotado;
-import com.kiosco.model.Cliente;
+import com.kiosco.model.subModel.Cliente;
 import com.kiosco.model.Producto;
+import com.kiosco.model.subModel.AnotadoCombo;
+import com.kiosco.model.subModel.AnotadoMenu;
+import com.kiosco.model.subModel.AnotadoProducto;
 import com.kiosco.record.AnotadoR;
 import com.kiosco.repository.AnotadoRepo;
 import com.kiosco.repository.ClienteRepo;
@@ -26,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +53,7 @@ public class AnotadoServiceImpl implements AnotadoService {
         if (request.cantidad() > producto.getStock()) {
             throw new BadRequestException("Stock insuficiente para el producto: " + request.productoId());
         }
-        Anotado anotado = new Anotado();
+        AnotadoProducto anotado = new AnotadoProducto();
         anotado.setCantidad(request.cantidad());
         anotado.setPrecioUnitario(request.precioUnitario() != null ? request.precioUnitario() : producto.getPrecioVenta());
         anotado.setFechaAnotado(request.fechaAnotado() != null ? request.fechaAnotado() : LocalDateTime.now());
@@ -122,10 +124,20 @@ public class AnotadoServiceImpl implements AnotadoService {
                 .limit(max)
                 .map(lista -> {
                     Anotado primero = lista.get(0);
-                    String clienteNombre = primero.getCliente() != null ? primero.getCliente().getNombre() + " " + primero.getCliente().getApellido() : "Cliente Desconocido";
+                    String clienteNombre = primero.getCliente() != null
+                            ? primero.getCliente().getNombre() + " " + primero.getCliente().getApellido()
+                            : "Cliente Desconocido";
 
                     String productosNombres = lista.stream()
-                            .map(a -> a.getProducto() != null ? a.getProducto().getNombre() : "Producto")
+                            .map(a -> {
+                                if (a instanceof AnotadoProducto ap && ap.getProducto() != null)
+                                    return ap.getProducto().getNombre();
+                                if (a instanceof AnotadoMenu am && am.getMenuDiario() != null)
+                                    return am.getMenuDiario().getNombre();
+                                if (a instanceof AnotadoCombo ac && ac.getCombo() != null)
+                                    return ac.getCombo().getNombre();
+                                return "Item";
+                            })
                             .distinct()
                             .collect(Collectors.joining(", "));
 
@@ -162,10 +174,10 @@ public class AnotadoServiceImpl implements AnotadoService {
             anotado.setCliente(cliente);
         }
 
-        if (request.productoId() != null) {
+        if (request.productoId() != null && anotado instanceof AnotadoProducto ap) {
             Producto producto = productoRepo.findById(request.productoId())
                     .orElseThrow(() -> new BadRequestException("Producto no encontrado con ID: " + request.productoId()));
-            anotado.setProducto(producto);
+            ap.setProducto(producto);
         }
 
         anotado.setCantidad(request.cantidad());

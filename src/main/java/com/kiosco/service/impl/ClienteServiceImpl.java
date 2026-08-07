@@ -1,7 +1,7 @@
 package com.kiosco.service.impl;
 
 import com.kiosco.dto.ClienteDTO;
-import com.kiosco.model.Cliente;
+import com.kiosco.model.subModel.Cliente;
 import com.kiosco.record.ClienteR;
 import com.kiosco.repository.ClienteRepo;
 import com.kiosco.service.ClienteService;

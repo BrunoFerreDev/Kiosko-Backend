@@ -4,6 +4,7 @@ class AppModalPayment extends HTMLElement {
   connectedCallback() {
     this.clienteId = null;
     this.monto = 0;
+    this.selectedItems = [];
     this.render();
   }
 
@@ -107,46 +108,62 @@ class AppModalPayment extends HTMLElement {
         const clienteId = parseInt(data.clienteId, 10);
         let response;
 
-        if (metodoPago === 'AMBAS') {
-          const cashAmount = parseFloat(this.payAmountCash.value) || 0;
-          const transferAmount = parseFloat(this.payAmountTransfer.value) || 0;
-
-          if (cashAmount <= 0 && transferAmount <= 0) {
-            throw new Error('Debe ingresar un monto mayor a cero en efectivo o transferencia.');
-          }
-
-          const promises = [];
-          if (cashAmount > 0) {
-            promises.push(PagosService.create({
-              clienteId,
-              montoAbonado: cashAmount,
-              metodoPago: 'EFECTIVO',
-              fechaPago: new Date().toISOString()
-            }));
-          }
-          if (transferAmount > 0) {
-            promises.push(PagosService.create({
-              clienteId,
-              montoAbonado: transferAmount,
-              metodoPago: 'TRANSFERENCIA',
-              fechaPago: new Date().toISOString()
-            }));
-          }
+        if (this.selectedItems && this.selectedItems.length > 0) {
+          const promises = this.selectedItems.map(item => {
+            if (item.type === 'combo') {
+              return window.KioskoAPI.AnotadosCombo.marcarComoPagado(item.id, metodoPago);
+            } else if (item.type === 'menu') {
+              return window.KioskoAPI.AnotadosMenu.marcarComoPagado(item.id, metodoPago);
+            } else {
+              return window.KioskoAPI.Anotados.marcarComoPagado(item.id, metodoPago);
+            }
+          });
 
           const responses = await Promise.all(promises);
           response = responses[0];
-
-          alert(`Pagos registrados exitosamente: Efectivo: $${cashAmount.toLocaleString('es-AR')}, Transferencia: $${transferAmount.toLocaleString('es-AR')}.`);
+          alert(`Pago registrado para ${this.selectedItems.length} anotaciones.`);
         } else {
-          const montoAbonado = parseFloat(data.montoAbonado) || 0;
-          response = await PagosService.create({
-            clienteId,
-            montoAbonado,
-            metodoPago,
-            fechaPago: new Date().toISOString()
-          });
+          if (metodoPago === 'AMBAS') {
+            const cashAmount = parseFloat(this.payAmountCash.value) || 0;
+            const transferAmount = parseFloat(this.payAmountTransfer.value) || 0;
 
-          alert(`Pago registrado exitosamente ($${montoAbonado.toLocaleString('es-AR')}).`);
+            if (cashAmount <= 0 && transferAmount <= 0) {
+              throw new Error('Debe ingresar un monto mayor a cero en efectivo o transferencia.');
+            }
+
+            const promises = [];
+            if (cashAmount > 0) {
+              promises.push(PagosService.create({
+                clienteId,
+                montoAbonado: cashAmount,
+                metodoPago: 'EFECTIVO',
+                fechaPago: new Date().toISOString()
+              }));
+            }
+            if (transferAmount > 0) {
+              promises.push(PagosService.create({
+                clienteId,
+                montoAbonado: transferAmount,
+                metodoPago: 'TRANSFERENCIA',
+                fechaPago: new Date().toISOString()
+              }));
+            }
+
+            const responses = await Promise.all(promises);
+            response = responses[0];
+
+            alert(`Pagos registrados exitosamente: Efectivo: $${cashAmount.toLocaleString('es-AR')}, Transferencia: $${transferAmount.toLocaleString('es-AR')}.`);
+          } else {
+            const montoAbonado = parseFloat(data.montoAbonado) || 0;
+            response = await PagosService.create({
+              clienteId,
+              montoAbonado,
+              metodoPago,
+              fechaPago: new Date().toISOString()
+            });
+
+            alert(`Pago registrado exitosamente ($${montoAbonado.toLocaleString('es-AR')}).`);
+          }
         }
 
         this.dispatchEvent(new CustomEvent('payment-created', { detail: response, bubbles: true }));
@@ -207,8 +224,9 @@ class AppModalPayment extends HTMLElement {
     }
   }
 
-  open(clienteId = null, monto = 0) {
+  open(clienteId = null, monto = 0, selectedItems = []) {
     this.clienteId = clienteId || new URLSearchParams(window.location.search).get('id') || 1;
+    this.selectedItems = selectedItems;
     this.querySelector('#pay-client-id').value = this.clienteId;
     
     if (this.payMethod) {

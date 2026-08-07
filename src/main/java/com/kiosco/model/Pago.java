@@ -1,5 +1,6 @@
 package com.kiosco.model;
 
+import com.kiosco.model.subModel.Cliente;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

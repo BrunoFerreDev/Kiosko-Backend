@@ -10,6 +10,7 @@ class AppSidebar extends HTMLElement {
       { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', href: `${basePath}index.html` },
       { id: 'clients', label: 'Clientes', icon: 'people', href: `${pagesPath}clientes.html` },
       { id: 'products', label: 'Productos', icon: 'inventory_2', href: `${pagesPath}productos.html` },
+      { id: 'comidas', label: 'Comidas Caseras', icon: 'restaurant_menu', href: `${pagesPath}comidas-caseras.html` },
     ];
 
     const navLinksHtml = links.map(link => {

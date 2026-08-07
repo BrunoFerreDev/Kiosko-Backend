@@ -2,7 +2,7 @@ package com.kiosco.service.impl;
 
 import com.kiosco.dto.PagoDTO;
 import com.kiosco.model.Anotado;
-import com.kiosco.model.Cliente;
+import com.kiosco.model.subModel.Cliente;
 import com.kiosco.model.DetallePago;
 import com.kiosco.model.Pago;
 import com.kiosco.record.PagoR;

@@ -21,6 +21,14 @@ window.openProductModal = (productData = null) => {
   document.querySelector('app-modal-product')?.open(productData);
 };
 
+window.openMenuDiarioModal = (menuData = null) => {
+  document.querySelector('app-modal-menu-diario')?.open(menuData);
+};
+
+window.openComboModal = (comboData = null) => {
+  document.querySelector('app-modal-combo')?.open(comboData);
+};
+
 window.openUploadModal = () => {
   document.querySelector('app-modal-upload')?.open();
 };
@@ -33,8 +41,8 @@ window.openCategoryModal = () => {
   document.querySelector('app-modal-category')?.open();
 };
 
-window.openPaymentModal = (clienteId = null, amount = 0) => {
-  document.querySelector('app-modal-payment')?.open(clienteId, amount);
+window.openPaymentModal = (clienteId = null, amount = 0, selectedItems = []) => {
+  document.querySelector('app-modal-payment')?.open(clienteId, amount, selectedItems);
 };
 
 window.setTodayDate = () => {

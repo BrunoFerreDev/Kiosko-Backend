@@ -3,6 +3,9 @@ spring:
     name: kiosco
   datasource:
     url: ${DB_URL}
+    #url: jdbc:postgresql://localhost:5432/postgres
+    #username: develop
+    #password: develop123
     username: ${DB_USER}
     password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
@@ -14,7 +17,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${DDL_TYPE}
     properties:
       hibernate:
         format_sql: true

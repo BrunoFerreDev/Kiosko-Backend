@@ -1,7 +1,7 @@
 package com.kiosco.dto;
 
 import com.kiosco.model.Anotado;
-import com.kiosco.model.Cliente;
+import com.kiosco.model.subModel.Cliente;
 import com.kiosco.model.DetallePago;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor

@@ -52,7 +52,8 @@ public class SecurityConfig {
                             "/swagger-resources/**",
                             "/", "/index.html", "/css/**", "/js/**", "/pages/**"
                     ).permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/productos/**","/categorias","/marcas").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/productos/**", "/categorias", "/marcas", "/combos/**", "/menus-diarios/**").permitAll();
+                    //auth.anyRequest().permitAll();
                     auth.anyRequest().hasAuthority("ADMINISTRADOR");
                 })
                 .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
