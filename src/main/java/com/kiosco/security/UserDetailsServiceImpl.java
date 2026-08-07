@@ -1,7 +1,7 @@
 package com.kiosco.security;
 
-import com.kiosco.model.Administrador;
-import com.kiosco.model.Cliente;
+import com.kiosco.model.subModel.Administrador;
+import com.kiosco.model.subModel.Cliente;
 import com.kiosco.model.Persona;
 import com.kiosco.record.AuthLogin;
 import com.kiosco.record.AuthResponse;

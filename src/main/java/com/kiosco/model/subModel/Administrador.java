@@ -1,9 +1,9 @@
-package com.kiosco.model;
+package com.kiosco.model.subModel;
 
+import com.kiosco.model.Persona;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -1,4 +1,4 @@
-import { AnotadosService, PagosService, ClientesService } from '../services/api.js';
+import { AnotadosService, PagosService, ClientesService, AnotadosComboService, AnotadosMenuService } from '../services/api.js';
 
 class AppTableHistory extends HTMLElement {
   connectedCallback() {
@@ -48,21 +48,31 @@ class AppTableHistory extends HTMLElement {
 
     try {
       let rawAnotados = [];
+      let rawCombos = [];
+      let rawMenus = [];
       let totalElements = 0;
       let totalPages = 1;
 
       if (clienteId) {
-        // GET /anotados/cliente/{clienteId} with pagination and sorting
-        const resp = await AnotadosService.getByCliente(clienteId, this.page, this.size, this.sortFilter || 'fecha,desc');
-        if (resp && resp.content) {
-          rawAnotados = resp.content;
-          totalElements = resp.totalElements || rawAnotados.length;
-          totalPages = resp.totalPages || 1;
+        // Fetch all three lists for the client
+        const [respProds, respCombos, respMenus] = await Promise.all([
+          AnotadosService.getByCliente(clienteId, this.page, this.size, this.sortFilter || 'fecha,desc').catch(() => ({ content: [] })),
+          AnotadosComboService.getByCliente(clienteId, 0, 100).catch(() => ({ content: [] })),
+          AnotadosMenuService.getByCliente(clienteId, 0, 100).catch(() => ({ content: [] }))
+        ]);
+
+        if (respProds && respProds.content) {
+          rawAnotados = respProds.content;
+          totalElements = respProds.totalElements || rawAnotados.length;
+          totalPages = respProds.totalPages || 1;
         } else {
-          rawAnotados = Array.isArray(resp) ? resp : [];
+          rawAnotados = Array.isArray(respProds) ? respProds : [];
           totalElements = rawAnotados.length;
           totalPages = 1;
         }
+
+        rawCombos = respCombos && respCombos.content ? respCombos.content : (Array.isArray(respCombos) ? respCombos : []);
+        rawMenus = respMenus && respMenus.content ? respMenus.content : (Array.isArray(respMenus) ? respMenus : []);
 
         try {
           this.clientInfo = await ClientesService.getById(clienteId);
@@ -72,53 +82,45 @@ class AppTableHistory extends HTMLElement {
           }
         }
       } else {
-        const resp = await AnotadosService.getPaged(this.page, this.size);
-        if (resp && resp.content) {
-          rawAnotados = resp.content;
-          totalElements = resp.totalElements || rawAnotados.length;
-          totalPages = resp.totalPages || 1;
+        // Global history
+        const [respProds, respCombos, respMenus] = await Promise.all([
+          AnotadosService.getPaged(this.page, this.size).catch(() => ({ content: [] })),
+          AnotadosComboService.getPaged(this.page, this.size).catch(() => ({ content: [] })),
+          AnotadosMenuService.getPaged(this.page, this.size).catch(() => ({ content: [] }))
+        ]);
+
+        if (respProds && respProds.content) {
+          rawAnotados = respProds.content;
+          totalElements = respProds.totalElements || rawAnotados.length;
+          totalPages = respProds.totalPages || 1;
         } else {
-          rawAnotados = Array.isArray(resp) ? resp : [];
+          rawAnotados = Array.isArray(respProds) ? respProds : [];
           totalElements = rawAnotados.length;
           totalPages = 1;
         }
+
+        rawCombos = respCombos && respCombos.content ? respCombos.content : (Array.isArray(respCombos) ? respCombos : []);
+        rawMenus = respMenus && respMenus.content ? respMenus.content : (Array.isArray(respMenus) ? respMenus : []);
       }
 
       const pagosResp = await PagosService.getAll().catch(() => []);
 
-      this.totalDebt = this.clientInfo && this.clientInfo.saldoPendiente !== undefined
-        ? parseFloat(this.clientInfo.saldoPendiente)
-        : rawAnotados
-          .filter(a => a.estado === 'PENDIENTE')
-          .reduce((sum, a) => sum + ((a.cantidad || 1) * (a.precioUnitario || a.producto?.precioVenta || 0)), 0);
-
-      if (!this.clientInfo && rawAnotados.length > 0 && rawAnotados[0].cliente) {
-        this.clientInfo = rawAnotados[0].cliente;
-      }
-
-      if (this.clientInfo) {
-        this.updateDOMClientCard(this.clientInfo, this.totalDebt);
-      }
-
       const formattedAnotados = rawAnotados.map(a => {
         const prodName = a.producto?.nombre || 'Producto';
         const brandObj = a.producto?.marca;
-        const brandName = brandObj
-          ? (typeof brandObj === 'object' ? brandObj.nombre : brandObj)
-          : '';
+        const brandName = brandObj ? (typeof brandObj === 'object' ? brandObj.nombre : brandObj) : '';
         const brand = brandName ? ` (${brandName})` : '';
         const unitPrice = a.precioUnitario || a.producto?.precioVenta || 0;
         const qty = a.cantidad || 1;
         const totalLine = unitPrice * qty;
 
         const catObj = a.producto?.categoria;
-        const catName = catObj
-          ? (typeof catObj === 'object' ? catObj.nombre : catObj)
-          : 'General';
+        const catName = catObj ? (typeof catObj === 'object' ? catObj.nombre : catObj) : 'General';
 
         return {
           type: 'anotado',
           id: a.anotadoId,
+          uniqueId: `product-${a.anotadoId}`,
           date: a.fechaAnotado || new Date().toISOString(),
           desc: `${prodName}${brand} x${qty}`,
           sub: `Cat: ${catName} | Estado: ${a.estado || 'PENDIENTE'}`,
@@ -128,6 +130,58 @@ class AppTableHistory extends HTMLElement {
         };
       });
 
+      const formattedCombos = rawCombos.map(ac => {
+        const comboName = ac.combo?.nombre || 'Combo';
+        const unitPrice = ac.precioUnitario || ac.combo?.precio || 0;
+        const qty = ac.cantidad || 1;
+        const totalLine = unitPrice * qty;
+
+        return {
+          type: 'combo',
+          id: ac.anotadoComboId,
+          uniqueId: `combo-${ac.anotadoComboId}`,
+          date: ac.fechaAnotado || new Date().toISOString(),
+          desc: `[Combo] ${comboName} x${qty}`,
+          sub: `Combo Especial | Estado: ${ac.estado || 'PENDIENTE'}`,
+          monto: totalLine,
+          isPago: false,
+          rawItem: ac
+        };
+      });
+
+      const formattedMenus = rawMenus.map(am => {
+        const menuName = am.menuDiario?.nombre || 'Menú';
+        const unitPrice = am.precioUnitario || am.menuDiario?.precio || 0;
+        const qty = am.cantidad || 1;
+        const totalLine = unitPrice * qty;
+
+        return {
+          type: 'menu',
+          id: am.anotadoMenuId,
+          uniqueId: `menu-${am.anotadoMenuId}`,
+          date: am.fechaAnotado || new Date().toISOString(),
+          desc: `[Menú] ${menuName} x${qty}`,
+          sub: `Menú Diario | Estado: ${am.estado || 'PENDIENTE'}`,
+          monto: totalLine,
+          isPago: false,
+          rawItem: am
+        };
+      });
+
+      // Sum all pending outstanding items for this client to get actual debt total
+      const debtProds = formattedAnotados.filter(a => a.rawItem?.estado === 'PENDIENTE').reduce((sum, a) => sum + a.monto, 0);
+      const debtCombos = formattedCombos.filter(c => c.rawItem?.estado === 'PENDIENTE').reduce((sum, c) => sum + c.monto, 0);
+      const debtMenus = formattedMenus.filter(m => m.rawItem?.estado === 'PENDIENTE').reduce((sum, m) => sum + m.monto, 0);
+      this.totalDebt = debtProds + debtCombos + debtMenus;
+
+      if (!this.clientInfo && rawAnotados.length > 0 && rawAnotados[0].cliente) {
+        this.clientInfo = rawAnotados[0].cliente;
+      }
+
+      if (this.clientInfo) {
+        this.updateDOMClientCard(this.clientInfo, this.totalDebt);
+      }
+
       const filteredPagos = (Array.isArray(pagosResp) ? pagosResp : []).filter(p =>
         !clienteId || String(p.cliente?.clienteId || p.clienteId) === String(clienteId)
       );
@@ -135,6 +189,7 @@ class AppTableHistory extends HTMLElement {
       const formattedPagos = filteredPagos.map(p => ({
         type: 'pago',
         id: p.pagoId,
+        uniqueId: `pago-${p.pagoId}`,
         date: p.fechaPago || new Date().toISOString(),
         desc: `Pago a cuenta (${p.metodoPago || 'EFECTIVO'})`,
         sub: `Comprobante Pago #${p.pagoId}`,
@@ -143,12 +198,12 @@ class AppTableHistory extends HTMLElement {
         rawItem: p
       }));
 
-      // Filter payments to only show on the page where they chronologically fit,
-      // preventing duplication across pages.
-      const filteredPagosForPage = formattedPagos.filter(p => {
-        if (formattedAnotados.length === 0) return true;
+      const combinedAnotados = [...formattedAnotados, ...formattedCombos, ...formattedMenus];
 
-        const dates = formattedAnotados.map(a => new Date(a.date).getTime());
+      const filteredPagosForPage = formattedPagos.filter(p => {
+        if (combinedAnotados.length === 0) return true;
+
+        const dates = combinedAnotados.map(a => new Date(a.date).getTime());
         const minDate = Math.min(...dates);
         const maxDate = Math.max(...dates);
         const pTime = new Date(p.date).getTime();
@@ -162,8 +217,7 @@ class AppTableHistory extends HTMLElement {
         return pTime >= minDate && pTime <= maxDate;
       });
 
-      // Compute running balance chronologically (always date ascending)
-      const allSortedAsc = [...formattedAnotados, ...filteredPagosForPage].sort(
+      const allSortedAsc = [...combinedAnotados, ...filteredPagosForPage].sort(
         (a, b) => new Date(a.date) - new Date(b.date)
       );
 
@@ -173,7 +227,6 @@ class AppTableHistory extends HTMLElement {
         m.saldoAcumulado = runningBalance;
       });
 
-      // Apply the final sort based on user's preference
       if (this.sortFilter && this.sortFilter.startsWith('precio')) {
         const isDesc = this.sortFilter.endsWith('desc');
         this.movements = allSortedAsc.sort((a, b) => isDesc ? b.monto - a.monto : a.monto - b.monto);
@@ -252,7 +305,7 @@ class AppTableHistory extends HTMLElement {
   getSelectedTotal() {
     let total = 0;
     this.movements.forEach(m => {
-      if (m.type === 'anotado' && this.selectedItemIds.has(m.id)) {
+      if (m.type !== 'pago' && this.selectedItemIds.has(m.uniqueId)) {
         total += m.monto;
       }
     });
@@ -268,8 +321,8 @@ class AppTableHistory extends HTMLElement {
       const dateShort = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
       const dateFull = dateObj.toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
 
-      const isPendingAnotado = m.type === 'anotado' && m.rawItem?.estado === 'PENDIENTE';
-      const isChecked = this.selectedItemIds.has(m.id);
+      const isPendingAnotado = m.type !== 'pago' && m.rawItem?.estado === 'PENDIENTE';
+      const isChecked = this.selectedItemIds.has(m.uniqueId);
 
       const amountColor = m.isPago ? 'text-primary font-bold' : 'text-error font-bold';
       const amountPrefix = m.isPago ? '-$' : '+$';
@@ -279,7 +332,7 @@ class AppTableHistory extends HTMLElement {
         <tr class="border-b border-outline-variant/10 hover:bg-surface-container-lowest/50 transition-colors">
           <td class="px-2 sm:px-4 py-3 sm:py-4 text-center">
             ${isPendingAnotado ? `
-              <input type="checkbox" data-anotado-id="${m.id}" ${isChecked ? 'checked' : ''} class="chk-select-item w-4 h-4 text-primary rounded border-outline-variant focus:ring-primary cursor-pointer" />
+              <input type="checkbox" data-unique-id="${m.uniqueId}" ${isChecked ? 'checked' : ''} class="chk-select-item w-4 h-4 text-primary rounded border-outline-variant focus:ring-primary cursor-pointer" />
             ` : ''}
           </td>
           
@@ -303,7 +356,7 @@ class AppTableHistory extends HTMLElement {
 
           <td class="px-2 sm:px-4 py-3 sm:py-4 text-right">
             ${isPendingAnotado ? `
-              <button data-pay-amount="${m.monto}" class="btn-pay-single-item h-8 px-2.5 sm:px-3 bg-primary-container text-white hover:bg-primary-fixed rounded-lg text-xs font-bold transition-colors cursor-pointer inline-flex items-center gap-1">
+              <button data-pay-amount="${m.monto}" data-unique-id="${m.uniqueId}" class="btn-pay-single-item h-8 px-2.5 sm:px-3 bg-primary-container text-white hover:bg-primary-fixed rounded-lg text-xs font-bold transition-colors cursor-pointer inline-flex items-center gap-1">
                 <span class="material-symbols-outlined text-xs">payments</span>
                 <span class="hidden sm:inline">Pagar</span>
               </button>
@@ -324,7 +377,7 @@ class AppTableHistory extends HTMLElement {
 
           <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
             ${this.selectedItemIds.size > 0 ? `
-              <button id="btn-pay-selected" class="h-9 px-3 sm:px-4 bg- text-white font-semibold rounded-xl hover:bg-primary-fixed-variant transition-colors shadow-sm cursor-pointer flex items-center gap-1 text-xs">
+              <button id="btn-pay-selected" class="h-9 px-3 sm:px-4 bg-primary text-white font-semibold rounded-xl hover:bg-primary-fixed-variant transition-colors shadow-sm cursor-pointer flex items-center gap-1 text-xs">
                 <span class="material-symbols-outlined text-sm">payments</span>
                 <span>Pagar (${this.selectedItemIds.size} = $${selectedTotal.toLocaleString('es-AR')})</span>
               </button>
@@ -379,11 +432,11 @@ class AppTableHistory extends HTMLElement {
     // Handle checkboxes
     this.querySelectorAll('.chk-select-item').forEach(chk => {
       chk.addEventListener('change', (e) => {
-        const id = parseInt(e.target.getAttribute('data-anotado-id'), 10);
+        const uniqueId = e.target.getAttribute('data-unique-id');
         if (e.target.checked) {
-          this.selectedItemIds.add(id);
+          this.selectedItemIds.add(uniqueId);
         } else {
-          this.selectedItemIds.delete(id);
+          this.selectedItemIds.delete(uniqueId);
         }
         this.render();
       });
@@ -392,17 +445,20 @@ class AppTableHistory extends HTMLElement {
     // Handle pay selected button
     this.querySelector('#btn-pay-selected')?.addEventListener('click', () => {
       const total = this.getSelectedTotal();
+      const itemsToPay = this.movements.filter(m => m.type !== 'pago' && this.selectedItemIds.has(m.uniqueId));
       if (window.openPaymentModal) {
-        window.openPaymentModal(clienteId, total);
+        window.openPaymentModal(clienteId, total, itemsToPay);
       }
     });
 
     // Handle single item pay button
     this.querySelectorAll('.btn-pay-single-item').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const amount = parseFloat(e.currentTarget.getAttribute('data-pay-amount')) || 0;
-        if (window.openPaymentModal) {
-          window.openPaymentModal(clienteId, amount);
+        const uniqueId = btn.getAttribute('data-unique-id');
+        const movement = this.movements.find(m => m.uniqueId === uniqueId);
+        const amount = parseFloat(btn.getAttribute('data-pay-amount')) || 0;
+        if (window.openPaymentModal && movement) {
+          window.openPaymentModal(clienteId, amount, [movement]);
         }
       });
     });

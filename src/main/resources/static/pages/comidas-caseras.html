@@ -1,0 +1,101 @@
+<!doctype html>
+<html class="light" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comidas Caseras - Mi Kiosko</title>
+    <meta name="description" content="Explorá los menús diarios y combos caseros disponibles en el kiosko." />
+    <link rel="shortcut icon" href="../css/iconWeb.webp" type="image/x-icon" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Material Symbols -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Shared Config & Custom CSS -->
+    <script src="../js/config/tailwind.config.js"></script>
+    <link rel="stylesheet" href="../css/styles.css" />
+
+    <!-- Web Components & Application Scripts (ES Modules) -->
+    <script type="module" src="../js/services/api.js"></script>
+    <script type="module" src="../js/components/loader.js"></script>
+    <script type="module" src="../js/components/pagination.js"></script>
+    <script type="module" src="../js/components/sidebar.js"></script>
+    <script type="module" src="../js/components/topbar.js"></script>
+    <script type="module" src="../js/components/kpi-card.js"></script>
+    <script type="module" src="../js/components/modal-client.js"></script>
+    <script type="module" src="../js/components/modal-annotation.js"></script>
+    <script type="module" src="../js/components/modal-menu-diario.js"></script>
+    <script type="module" src="../js/components/modal-combo.js"></script>
+    <script type="module" src="../js/components/comidas-caseras.js"></script>
+    <script type="module" src="../js/app.js"></script>
+  </head>
+  <body
+    class="bg-background text-on-background font-body-md text-body-md antialiased flex flex-col md:flex-row min-h-screen"
+  >
+    <!-- Sidebar Web Component -->
+    <app-sidebar active="comidas"></app-sidebar>
+
+    <!-- Main Content Area -->
+    <main class="ml-0 md:ml-64 flex-1 flex flex-col min-h-screen w-full">
+      <app-topbar></app-topbar>
+
+      <!-- Main Content Canvas -->
+      <div class="flex-1 p-4 sm:p-6 lg:p-container-padding overflow-y-auto">
+        <!-- Page Header -->
+        <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-3 mb-6">
+          <div>
+            <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">
+              Menú del día & Combos especiales
+            </p>
+            <h1
+              class="font-display-lg text-2xl sm:text-3xl lg:text-display-lg text-on-surface font-bold"
+            >
+              Comidas Caseras
+            </h1>
+          </div>
+        </div>
+
+        <!-- KPI Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-card-gap mb-6">
+          <app-kpi-card
+            id="kpi-menus-total"
+            title="Menús Disponibles"
+            value="0"
+            tag="Registrados"
+            icon="restaurant_menu"
+          >
+          </app-kpi-card>
+
+          <app-kpi-card
+            id="kpi-combos-total"
+            title="Combos Activos"
+            value="0"
+            tag="Oferta"
+            icon="lunch_dining"
+          >
+          </app-kpi-card>
+        </div>
+
+        <!-- Main section component -->
+        <app-comidas-caseras></app-comidas-caseras>
+      </div>
+    </main>
+
+    <!-- Global Modals -->
+    <app-modal-client></app-modal-client>
+    <app-modal-annotation></app-modal-annotation>
+    <app-modal-menu-diario></app-modal-menu-diario>
+    <app-modal-combo></app-modal-combo>
+  </body>
+</html>

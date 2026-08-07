@@ -33,10 +33,6 @@ public class ClienteController {
         return ResponseEntity.ok(clienteService.obtenerPaginado(pageable));
     }
 
-   /* @GetMapping("/paginado")
-    public ResponseEntity<Page<ClienteDTO>> obtenerPaginado(@PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(clienteService.obtenerPaginado(pageable));
-    }*/
 
     @GetMapping("/{id}")
     public ResponseEntity<ClienteDTO> obtenerPorId(@PathVariable Long id) {

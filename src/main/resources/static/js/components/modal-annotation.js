@@ -1,11 +1,14 @@
-import { ClientesService, ProductosService, AnotadosService } from '../services/api.js';
+import { ClientesService, ProductosService, AnotadosService, CombosService, MenuDiariosService, AnotadosComboService, AnotadosMenuService } from '../services/api.js';
 
 class AppModalAnnotation extends HTMLElement {
   connectedCallback() {
     this.items = [];
     this.availableProducts = [];
     this.availableClients = [];
+    this.availableCombos = [];
+    this.availableMenus = [];
     this.loadingData = false;
+    this.annotationType = 'product'; // 'product' | 'combo' | 'menu'
 
     this.render();
   }
@@ -13,23 +16,19 @@ class AppModalAnnotation extends HTMLElement {
   async loadCatalogs() {
     this.loadingData = true;
     try {
-      const [clientsResp, prodsResp] = await Promise.all([
+      const [clientsResp, prodsResp, combosResp, menusResp] = await Promise.all([
         ClientesService.getAll().catch(() => []),
-        ProductosService.getAll().catch(() => [])
+        ProductosService.getAll().catch(() => []),
+        CombosService.getActivos().catch(() => []),
+        MenuDiariosService.getAll().catch(() => [])
       ]);
 
       this.availableClients = Array.isArray(clientsResp) ? clientsResp : (clientsResp.content || []);
       this.availableProducts = Array.isArray(prodsResp) ? prodsResp : (prodsResp.content || []);
+      this.availableCombos = Array.isArray(combosResp) ? combosResp : (combosResp.content || []);
+      this.availableMenus = Array.isArray(menusResp) ? menusResp : (menusResp.content || []);
     } catch (err) {
-      console.warn('No se pudo cargar catálogos desde la API, usando datos por defecto:', err);
-      this.availableClients = [
-        { clienteId: 1, nombreCompleto: 'Juan Pérez' },
-        { clienteId: 2, nombreCompleto: 'Familia Pérez' }
-      ];
-      this.availableProducts = [
-        { productoId: 1, nombre: 'Coca Cola 2.25L', precioVenta: 1400 },
-        { productoId: 2, nombre: 'Leche Entera 1L (Sachet)', precioVenta: 450 }
-      ];
+      console.warn('No se pudo cargar catálogos desde la API:', err);
     } finally {
       this.loadingData = false;
       this.updateCatalogOptions();
@@ -42,18 +41,31 @@ class AppModalAnnotation extends HTMLElement {
 
     if (clientSelect) {
       clientSelect.innerHTML = `<option value="">-- Seleccionar Cliente --</option>` +
-        this.availableClients.map(c => `<option value="${c.clienteId}">${c.nombreCompleto}</option>`).join('');
+        this.availableClients.map(c => `<option value="${c.clienteId}">${c.nombreCompleto || `${c.nombre || ''} ${c.apellido || ''}`.trim()}</option>`).join('');
       if (this.preselectedClienteId) {
         clientSelect.value = this.preselectedClienteId;
       }
     }
 
     if (prodSelect) {
-      prodSelect.innerHTML = `<option value="">-- Elegir producto del catálogo --</option>` +
-        this.availableProducts.map(p => {
-          const catName = p.categoria ? (typeof p.categoria === 'object' ? p.categoria.nombre : p.categoria) : 'Sin Cat.';
-          return `<option value="${p.productoId}">${p.nombre} [${catName}] - $${(p.precioVenta || 0).toLocaleString('es-AR')}</option>`;
-        }).join('');
+      if (this.annotationType === 'product') {
+        prodSelect.innerHTML = `<option value="">-- Elegir producto del catálogo (${this.availableProducts.length}) --</option>` +
+          this.availableProducts.map(p => {
+            const catName = p.categoria ? (typeof p.categoria === 'object' ? p.categoria.nombre : p.categoria) : 'Sin Cat.';
+            return `<option value="${p.productoId}">${p.nombre} [${catName}] - $${(p.precioVenta || 0).toLocaleString('es-AR')}</option>`;
+          }).join('');
+      } else if (this.annotationType === 'combo') {
+        prodSelect.innerHTML = `<option value="">-- Elegir combo activo (${this.availableCombos.length}) --</option>` +
+          this.availableCombos.map(c => {
+            return `<option value="${c.comboId}">${c.nombre} - $${(c.precio || 0).toLocaleString('es-AR')}</option>`;
+          }).join('');
+      } else if (this.annotationType === 'menu') {
+        prodSelect.innerHTML = `<option value="">-- Elegir menú diario (${this.availableMenus.length}) --</option>` +
+          this.availableMenus.map(m => {
+            const dateStr = m.fecha ? new Date(m.fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '—';
+            return `<option value="${m.menuDiarioId}">${m.nombre} (${dateStr}) - $${(m.precio || 0).toLocaleString('es-AR')}</option>`;
+          }).join('');
+      }
     }
   }
 
@@ -91,14 +103,23 @@ class AppModalAnnotation extends HTMLElement {
 
             <!-- Product Selection Row -->
             <div class="p-4 bg-surface-container-low/50 rounded-xl border border-outline-variant/30 flex flex-col gap-3">
-              <label class="block font-label-caps text-label-caps text-on-surface uppercase font-semibold">Agregar Producto a la Anotación</label>
+              <label class="block font-label-caps text-label-caps text-on-surface uppercase font-semibold">Agregar Elemento a la Anotación</label>
               
-              <!-- Buscador de producto por nombre o categoría -->
-              <input type="text" id="input-search-product" placeholder="Buscar por nombre o categoría..." class="w-full h-11 px-3 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-medium" />
+              <!-- Tab Switcher for type -->
+              <div class="flex bg-surface-container rounded-xl p-1 gap-1 w-full border border-outline-variant/30">
+                <button type="button" class="annotation-type-btn flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer" data-type="product">Producto</button>
+                <button type="button" class="annotation-type-btn flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer" data-type="combo">Combo</button>
+                <button type="button" class="annotation-type-btn flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer" data-type="menu">Menú Diario</button>
+              </div>
+
+              <!-- Buscador de producto por nombre o categoría (only visible for product type) -->
+              <div id="search-product-container">
+                <input type="text" id="input-search-product" placeholder="Buscar por nombre o categoría..." class="w-full h-11 px-3 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-medium" />
+              </div>
 
               <div class="flex flex-col gap-3">
                 <select id="select-product" class="w-full h-11 px-3 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-medium">
-                  <option value="">Cargando productos...</option>
+                  <option value="">Cargando catálogo...</option>
                 </select>
 
                 <div class="flex items-center justify-between gap-3">
@@ -109,7 +130,7 @@ class AppModalAnnotation extends HTMLElement {
                   
                   <button type="button" id="btn-add-item" class="h-11 px-6 bg-primary text-on-primary font-semibold rounded-xl hover:bg-primary-fixed-variant transition-colors cursor-pointer flex items-center justify-center gap-2 shrink-0">
                     <span class="material-symbols-outlined text-sm">add</span>
-                    <span>Agregar Producto</span>
+                    <span>Agregar Elemento</span>
                   </button>
                 </div>
               </div>
@@ -117,7 +138,7 @@ class AppModalAnnotation extends HTMLElement {
 
             <!-- Items Added List -->
             <div>
-              <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-2 font-semibold">Productos Anotados</label>
+              <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-2 font-semibold">Elementos Anotados</label>
               
               <div id="items-container" class="max-h-48 overflow-y-auto border border-outline-variant/30 rounded-xl divide-y divide-outline-variant/20 bg-surface">
                 <!-- Items rendered dynamically -->
@@ -168,7 +189,7 @@ class AppModalAnnotation extends HTMLElement {
       const val = e.target.value;
       this.searchTimeout = setTimeout(() => {
         this.searchBackendProducts(val);
-      }, 2000);
+      }, 1000);
     });
 
     this.querySelector('#input-search-product')?.addEventListener('keydown', (e) => {
@@ -179,30 +200,58 @@ class AppModalAnnotation extends HTMLElement {
       }
     });
 
+    // Bind Type Switcher Buttons
+    this.querySelectorAll('.annotation-type-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.switchAnnotationType(btn.dataset.type);
+      });
+    });
+
     this.form?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(this.form);
       const data = Object.fromEntries(formData.entries());
 
       if (this.items.length === 0) {
-        alert('Por favor agrega al menos un producto a la anotación.');
+        alert('Por favor agrega al menos un elemento a la anotación.');
         return;
       }
 
       this.setSubmitting(true);
       try {
-        // Post each item to /anotados endpoint per API docs
-        const promises = this.items.map(item => AnotadosService.create({
-          clienteId: data.clienteId,
-          productoId: item.id,
-          cantidad: item.qty,
-          precioUnitario: item.price,
-          fechaAnotado: new Date().toISOString(),
-          estado: 'PENDIENTE'
-        }));
+        const promises = this.items.map(item => {
+          if (item.type === 'combo') {
+            return AnotadosComboService.create({
+              clienteId: data.clienteId,
+              comboId: item.id,
+              cantidad: item.qty,
+              precioUnitario: item.price,
+              fechaAnotado: new Date().toISOString(),
+              estado: 'PENDIENTE'
+            });
+          } else if (item.type === 'menu') {
+            return AnotadosMenuService.create({
+              clienteId: data.clienteId,
+              menuDiarioId: item.id,
+              cantidad: item.qty,
+              precioUnitario: item.price,
+              fechaAnotado: new Date().toISOString(),
+              estado: 'PENDIENTE'
+            });
+          } else {
+            return AnotadosService.create({
+              clienteId: data.clienteId,
+              productoId: item.id,
+              cantidad: item.qty,
+              precioUnitario: item.price,
+              fechaAnotado: new Date().toISOString(),
+              estado: 'PENDIENTE'
+            });
+          }
+        });
 
         await Promise.all(promises);
-        alert(`Anotación de ${this.items.length} producto(s) guardada con éxito en la API.`);
+        alert(`Anotación de ${this.items.length} elemento(s) guardada con éxito.`);
         this.dispatchEvent(new CustomEvent('annotation-created', { bubbles: true }));
         this.items = [];
         this.form.reset();
@@ -221,7 +270,34 @@ class AppModalAnnotation extends HTMLElement {
       }
     });
 
+    this.switchAnnotationType('product');
     this.renderItems();
+  }
+
+  switchAnnotationType(type) {
+    this.annotationType = type;
+    
+    // Update button styling
+    this.querySelectorAll('.annotation-type-btn').forEach(btn => {
+      const active = btn.dataset.type === type;
+      btn.className = `annotation-type-btn flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+        active
+          ? 'bg-primary text-on-primary shadow-sm'
+          : 'text-on-surface-variant hover:bg-surface-container-high'
+      }`;
+    });
+
+    // Show/hide search field
+    const searchContainer = this.querySelector('#search-product-container');
+    if (searchContainer) {
+      if (type === 'product') {
+        searchContainer.style.display = 'block';
+      } else {
+        searchContainer.style.display = 'none';
+      }
+    }
+
+    this.updateCatalogOptions();
   }
 
   setSubmitting(isSubmitting) {
@@ -274,7 +350,6 @@ class AppModalAnnotation extends HTMLElement {
         if (p && p.productoId && !seen.has(p.productoId)) {
           seen.add(p.productoId);
           deduplicated.push(p);
-          // Asegurar que el producto esté en availableProducts para que addItem lo encuentre
           if (!this.availableProducts.some(ap => ap.productoId === p.productoId)) {
             this.availableProducts.push(p);
           }
@@ -299,23 +374,43 @@ class AppModalAnnotation extends HTMLElement {
   addItem() {
     const select = this.querySelector('#select-product');
     const qtyInput = this.querySelector('#input-qty');
-    const productId = select.value;
+    const id = select.value;
     const qty = parseInt(qtyInput.value) || 1;
 
-    if (!productId) {
-      alert('Selecciona un producto de la lista.');
+    if (!id) {
+      alert('Selecciona un elemento de la lista.');
       return;
     }
 
-    const prod = this.availableProducts.find(p => String(p.productoId) === String(productId));
-    if (!prod) return;
+    let name = '';
+    let price = 0;
+    let unidadMedida = 'un.';
 
-    const price = prod.precioVenta || 0;
-    const existingIndex = this.items.findIndex(item => String(item.id) === String(productId));
+    if (this.annotationType === 'product') {
+      const prod = this.availableProducts.find(p => String(p.productoId) === String(id));
+      if (!prod) return;
+      name = prod.nombre;
+      price = prod.precioVenta || 0;
+      unidadMedida = prod.unidadMedida || 'unidad';
+    } else if (this.annotationType === 'combo') {
+      const combo = this.availableCombos.find(c => String(c.comboId) === String(id));
+      if (!combo) return;
+      name = `[Combo] ${combo.nombre}`;
+      price = combo.precio || 0;
+      unidadMedida = 'combo';
+    } else if (this.annotationType === 'menu') {
+      const menu = this.availableMenus.find(m => String(m.menuDiarioId) === String(id));
+      if (!menu) return;
+      name = `[Menú] ${menu.nombre}`;
+      price = menu.precio || 0;
+      unidadMedida = 'menú';
+    }
+
+    const existingIndex = this.items.findIndex(item => String(item.id) === String(id) && item.type === this.annotationType);
     if (existingIndex >= 0) {
       this.items[existingIndex].qty += qty;
     } else {
-      this.items.push({ id: prod.productoId, name: prod.nombre, price, qty, unidadMedida: prod.unidadMedida });
+      this.items.push({ id: parseInt(id, 10), name, price, qty, unidadMedida, type: this.annotationType });
     }
 
     select.value = '';
@@ -343,7 +438,7 @@ class AppModalAnnotation extends HTMLElement {
     if (this.items.length === 0) {
       this.itemsContainer.innerHTML = `
         <div class="p-4 text-center text-on-surface-variant text-sm font-medium">
-          No hay productos en la lista. Selecciona arriba para agregar.
+          No hay elementos en la lista. Selecciona arriba para agregar.
         </div>
       `;
     } else {

@@ -1,7 +1,9 @@
 package com.kiosco.dto;
 
-
 import com.kiosco.model.Anotado;
+import com.kiosco.model.subModel.AnotadoCombo;
+import com.kiosco.model.subModel.AnotadoMenu;
+import com.kiosco.model.subModel.AnotadoProducto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +20,10 @@ public class AnotadoDTO {
     private String estado;
     private ClienteDTO cliente;
     private ProductoDTO producto;
+    private MenuDiarioDTO menuDiario;
+    private ComboDTO combo;
+    private String nombreItem;
+    private String tipo;
 
     public AnotadoDTO(Anotado anotado) {
         this.anotadoId = anotado.getAnotadoId();
@@ -25,7 +31,23 @@ public class AnotadoDTO {
         this.precioUnitario = anotado.getPrecioUnitario();
         this.fechaAnotado = anotado.getFechaAnotado();
         this.estado = anotado.getEstado();
-        this.cliente = new ClienteDTO(anotado.getCliente());
-        this.producto = new ProductoDTO(anotado.getProducto());
+        this.cliente = anotado.getCliente() != null ? new ClienteDTO(anotado.getCliente()) : null;
+
+        if (anotado instanceof AnotadoProducto ap) {
+            this.tipo = "PRODUCTO";
+            this.producto = ap.getProducto() != null ? new ProductoDTO(ap.getProducto()) : null;
+            this.nombreItem = ap.getProducto() != null ? ap.getProducto().getNombre() : "Producto";
+        } else if (anotado instanceof AnotadoMenu am) {
+            this.tipo = "MENU";
+            this.menuDiario = am.getMenuDiario() != null ? new MenuDiarioDTO(am.getMenuDiario()) : null;
+            this.nombreItem = am.getMenuDiario() != null ? am.getMenuDiario().getNombre() : "Menú";
+        } else if (anotado instanceof AnotadoCombo ac) {
+            this.tipo = "COMBO";
+            this.combo = ac.getCombo() != null ? new ComboDTO(ac.getCombo()) : null;
+            this.nombreItem = ac.getCombo() != null ? ac.getCombo().getNombre() : "Combo";
+        } else {
+            this.tipo = "DESCONOCIDO";
+            this.nombreItem = "Anotado";
+        }
     }
 }

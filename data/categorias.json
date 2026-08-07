@@ -1,41 +1,62 @@
-[ {
-  "id" : 0,
-  "codigo" : "SA",
-  "nombre" : "SIN ASIGNAR",
-  "descripcion" : null
-}, {
-  "id" : 1,
-  "codigo" : "BEBIDAS",
-  "nombre" : "Bebidas y Gaseosas",
-  "descripcion" : "Gaseosas, aguas, jugos y aguas saborizadas"
-}, {
-  "id" : 2,
-  "codigo" : "GOLOSINAS",
-  "nombre" : "Golosinas y Chocolates",
-  "descripcion" : "Alfajores, caramelos, chicles, chocolates y turrones"
-}, {
-  "id" : 3,
-  "codigo" : "ALMACEN",
-  "nombre" : "Almacén y Galletitas",
-  "descripcion" : "Yerba, azúcar, galletitas dulces y saladas, fideos"
-}, {
-  "id" : 4,
-  "codigo" : "CIGARRILLOS",
-  "nombre" : "Cigarrillos y Tabaco",
-  "descripcion" : "Atados de cigarrillos, encendedores, encendedores y sedas"
-}, {
-  "id" : 5,
-  "codigo" : "FIAMBRERIA",
-  "nombre" : "Fiambrería y Lácteos",
-  "descripcion" : "Quesos, fiambres, yogures, leches y manteca"
-}, {
-  "id" : 6,
-  "codigo" : "SNACKS",
-  "nombre" : "Snacks",
-  "descripcion" : "Para chizitos, palitos y derivados!"
-}, {
-  "id" : 7,
-  "codigo" : "FYV",
-  "nombre" : "Frutas y verduras",
-  "descripcion" : ""
-} ]
+[
+  {
+    "id": 0,
+    "codigo": "SA",
+    "nombre": "Sin Asignar",
+    "descripcion": null
+  },
+  {
+    "id": 1,
+    "codigo": "BEBIDAS",
+    "nombre": "Bebidas y Gaseosas",
+    "descripcion": "Gaseosas, aguas, jugos y aguas saborizadas"
+  },
+  {
+    "id": 2,
+    "codigo": "GOLOSINAS",
+    "nombre": "Golosinas y Chocolates",
+    "descripcion": "Alfajores, caramelos, chicles, chocolates y turrones"
+  },
+  {
+    "id": 3,
+    "codigo": "ALMACEN",
+    "nombre": "Almacén y Galletitas",
+    "descripcion": "Yerba, azúcar, galletitas dulces y saladas, fideos"
+  },
+  {
+    "id": 4,
+    "codigo": "CIGARRILLOS",
+    "nombre": "Cigarrillos y Tabaco",
+    "descripcion": "Atados de cigarrillos, encendedores, encendedores y sedas"
+  },
+  {
+    "id": 5,
+    "codigo": "FIAMBRERIA",
+    "nombre": "Fiambrería y Lácteos",
+    "descripcion": "Quesos, fiambres, yogures, leches y manteca"
+  },
+  {
+    "id": 6,
+    "codigo": "SNACKS",
+    "nombre": "Snacks",
+    "descripcion": "Para chizitos, palitos y derivados!"
+  },
+  {
+    "id": 7,
+    "codigo": "FYV",
+    "nombre": "Frutas y verduras",
+    "descripcion": ""
+  },
+  {
+    "id": 8,
+    "codigo": "CSRS",
+    "nombre": "Caseros",
+    "descripcion": "Comidas caseras"
+  },
+  {
+    "id": 9,
+    "codigo": "ENLATADOS",
+    "nombre": "Enlatados",
+    "descripcion": "Todo tipo de productos enlatados!"
+  }
+]

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/anotados")
 @RequiredArgsConstructor
@@ -29,19 +30,15 @@ public class AnotadoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AnotadoDTO>> obtenerTodos() {
-        return ResponseEntity.ok(anotadoService.obtenerTodos());
+    public ResponseEntity<Page<AnotadoDTO>> obtenerTodos(
+            @ParameterObject @PageableDefault(size = 10, sort = "fecha", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(anotadoService.obtenerPaginado(pageable));
     }
 
     @GetMapping("/actividad-reciente")
     public ResponseEntity<List<ActividadRecienteDTO>> obtenerActividadReciente(
             @RequestParam(required = false, defaultValue = "10") int limite) {
         return ResponseEntity.ok(anotadoService.obtenerActividadReciente(limite));
-    }
-
-    @GetMapping("/paginado")
-    public ResponseEntity<Page<AnotadoDTO>> obtenerPaginado(@PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(anotadoService.obtenerPaginado(pageable));
     }
 
     @GetMapping("/cliente/{clienteId}")

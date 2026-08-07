@@ -12,6 +12,7 @@ import com.kiosco.utils.BadRequestException;
 import com.kiosco.utils.CategoriaFileService;
 import com.kiosco.utils.MarcaFileService;
 import com.kiosco.utils.NotFoundException;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -66,19 +67,30 @@ public class ProductoServiceImpl implements ProductoService {
         Specification<Producto> spec = (root, query, cb) -> cb.equal(root.get("estado"), true);
 
         if (nombre != null && !nombre.isBlank()) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("nombre")), "%" + nombre.toLowerCase() + "%"));
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("nombre")), "%" + nombre.toLowerCase() + "%"));
         }
-        if (marca != null && !marca.isBlank()) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("marca")), "%" + marca.toLowerCase() + "%"));
-        }
-        if (categoria != null && !categoria.isBlank()) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("categoria")), "%" + categoria.toLowerCase() + "%"));
-        }
+        /*if (marca != null && !marca.isBlank()) {
+            List<Long> idsMarca = marcaFileService.buscarIdsPorNombre(marca);
+            if (idsMarca.isEmpty()) {
+                return Page.empty(pageable);
+            }
+            spec = spec.and((root, query, cb) -> root.get("marcaId").in(idsMarca));
+        }*/
+      /*  if (categoria != null && !categoria.isBlank()) {
+            List<Long> idsCategoria = categoriaFileService.buscarIdsPorNombre(categoria);
+            if (idsCategoria.isEmpty()) {
+                return Page.empty(pageable);
+            }
+            spec = spec.and((root, query, cb) -> root.get("categoriaId").in(idsCategoria));
+        }*/
         if (precioMin != null) {
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("precioVenta"), precioMin));
+            spec = spec.and((root, query, cb) ->
+                    cb.greaterThanOrEqualTo(root.get("precioVenta"), precioMin));
         }
         if (precioMax != null) {
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("precioVenta"), precioMax));
+            spec = spec.and((root, query, cb) ->
+                    cb.lessThanOrEqualTo(root.get("precioVenta"), precioMax));
         }
 
         return productoRepo.findAll(spec, pageable).map(this::toDTO);
@@ -94,12 +106,10 @@ public class ProductoServiceImpl implements ProductoService {
     public ProductoDTO actualizar(Long id, ProductoR request) {
         Producto producto = productoRepo.findById(id).orElseThrow(() -> new NotFoundException("Producto no encontrado con ID: " + id));
 
-        // 1. Validar que la marca exista en marcas.json
         if (request.marca() != null) {
             marcaFileService.buscarPorId(request.marca()).orElseThrow(() -> new NotFoundException("Marca no encontrada con ID: " + request.marca()));
         }
 
-        // 2. Validar que la categoría exista en categorias.json
         if (request.categoria() != null) {
             categoriaFileService.buscarPorId(request.categoria()).orElseThrow(() -> new NotFoundException("Categoría no encontrada con ID: " + request.categoria()));
         }
@@ -135,10 +145,24 @@ public class ProductoServiceImpl implements ProductoService {
 
     private ProductoDTO toDTO(Producto producto) {
         String nombreMarca = marcaFileService.buscarPorId(producto.getMarcaId()).map(MarcaR::nombre).orElse("Sin Marca");
-
         String nombreCategoria = categoriaFileService.buscarPorId(producto.getCategoriaId()).map(CategoriaR::nombre).orElse("Sin Categoría");
-
         return new ProductoDTO(producto, nombreMarca, nombreCategoria);
+    }
+
+    /**
+     * Specification que excluye productos con categoría "Caseros".
+     * Los IDs se resuelven desde los JSON en memoria; si no existen devuelve predicado vacío.
+     */
+    private Specification<Producto> specExcluirCaseros() {
+        List<Long> idsCategoriasExcluidas = categoriaFileService.buscarIdsPorNombre("Caseros");
+
+        return (root, query, cb) -> {
+            Predicate base = cb.conjunction();
+            if (!idsCategoriasExcluidas.isEmpty()) {
+                base = cb.and(base, cb.not(root.get("categoriaId").in(idsCategoriasExcluidas)));
+            }
+            return base;
+        };
     }
 
     @Override

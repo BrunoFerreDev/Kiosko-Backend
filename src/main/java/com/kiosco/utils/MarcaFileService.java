@@ -64,6 +64,14 @@ public class MarcaFileService {
         return marcas.stream().filter(m -> m.id().equals(id)).findFirst();
     }
 
+    public List<Long> buscarIdsPorNombre(String nombre) {
+        String lower = nombre.toLowerCase();
+        return marcas.stream()
+                .filter(m -> m.nombre() != null && m.nombre().toLowerCase().contains(lower))
+                .map(MarcaR::id)
+                .toList();
+    }
+
     public synchronized MarcaR crearMarca(String codigo, String nombre) {
         Long nuevoId = marcas.stream().mapToLong(MarcaR::id).max().orElse(0L) + 1;
         MarcaR nueva = new MarcaR(nuevoId, codigo.toUpperCase(), nombre);
