@@ -122,13 +122,13 @@ class AppModalAnnotation extends HTMLElement {
                   <option value="">Cargando catálogo...</option>
                 </select>
 
-                <div class="flex items-center justify-between gap-3">
-                  <div class="flex items-center gap-2">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div class="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
                     <span class="text-xs font-semibold text-on-surface-variant uppercase">Cantidad:</span>
                     <input type="number" id="input-qty" value="1" min="1" max="99" class="w-16 h-11 px-2 bg-surface text-on-surface border border-outline-variant rounded-xl text-center font-bold outline-none" title="Cantidad" />
                   </div>
                   
-                  <button type="button" id="btn-add-item" class="h-11 px-6 bg-primary text-on-primary font-semibold rounded-xl hover:bg-primary-fixed-variant transition-colors cursor-pointer flex items-center justify-center gap-2 shrink-0">
+                  <button type="button" id="btn-add-item" class="h-11 px-6 bg-primary text-on-primary font-semibold rounded-xl hover:bg-primary-fixed-variant transition-colors cursor-pointer flex items-center justify-center gap-2 shrink-0 w-full sm:w-auto">
                     <span class="material-symbols-outlined text-sm">add</span>
                     <span>Agregar Elemento</span>
                   </button>
