@@ -31,7 +31,7 @@ public class AnotadoController {
 
     @GetMapping
     public ResponseEntity<Page<AnotadoDTO>> obtenerTodos(
-            @ParameterObject @PageableDefault(size = 10, sort = "fecha", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 10, sort = "fechaAnotado", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(anotadoService.obtenerPaginado(pageable));
     }
 
