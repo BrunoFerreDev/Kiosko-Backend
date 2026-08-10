@@ -41,16 +41,11 @@
   },
   {
     "id": 8,
-    "codigo": "PPTS",
-    "nombre": "Pipitos"
-  },
-  {
-    "id": 9,
     "codigo": "BRAHAMA",
     "nombre": "Brahama"
   },
   {
-    "id": 10,
+    "id": 9,
     "codigo": "BUDWEISER",
     "nombre": "Budweiser"
   }
