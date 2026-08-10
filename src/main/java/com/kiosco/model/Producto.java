@@ -1,7 +1,6 @@
 package com.kiosco.model;
 
 import com.kiosco.UnidadMedida;
-import com.kiosco.model.subModel.AnotadoMenu;
 import com.kiosco.model.subModel.AnotadoProducto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,9 +10,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -38,7 +35,4 @@ public class Producto {
 
     @OneToMany(mappedBy = "producto", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<AnotadoProducto> anotados = new HashSet<>();
-
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<MenuDiarioItem> menuDiarioItems = new HashSet<>();
 }

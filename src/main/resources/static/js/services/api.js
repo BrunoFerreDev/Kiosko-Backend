@@ -274,34 +274,7 @@ export const PagosService = {
   delete: (id) => ApiService.request(`${API_BASE_URL}/pagos/${id}`, { method: 'DELETE' })
 };
 
-// 5. MenuDiarios Service
-export const MenuDiariosService = {
-  getPaged: (params = {}) => {
-    const urlParams = new URLSearchParams();
-    urlParams.append('page', params.page !== undefined ? params.page : 0);
-    urlParams.append('size', params.size || 9);
-    if (params.fecha) urlParams.append('fecha', params.fecha);
-    return ApiService.request(`${API_BASE_URL}/menus-diarios?${urlParams.toString()}`);
-  },
-
-  getAll: () => ApiService.request(`${API_BASE_URL}/menus-diarios?size=100`),
-
-  getById: (id) => ApiService.request(`${API_BASE_URL}/menus-diarios/${id}`),
-
-  create: (data) => ApiService.request(`${API_BASE_URL}/menus-diarios`, {
-    method: 'POST',
-    body: data
-  }),
-
-  update: (id, data) => ApiService.request(`${API_BASE_URL}/menus-diarios/${id}`, {
-    method: 'PUT',
-    body: data
-  }),
-
-  delete: (id) => ApiService.request(`${API_BASE_URL}/menus-diarios/${id}`, { method: 'DELETE' })
-};
-
-// 6. Combos Service
+// 5. Combos Service
 export const CombosService = {
   getPaged: (params = {}) => {
     const urlParams = new URLSearchParams();
@@ -342,7 +315,7 @@ const decodeJwt = (token) => {
   }
 };
 
-// 5. Auth Service
+// 6. Auth Service
 export const AuthService = {
   login: async (whatsapp, contrasenia) => {
     const response = await ApiService.request(`${API_BASE_URL}/auth/login`, {
@@ -448,25 +421,6 @@ export const AnotadosComboService = {
   marcarComoPagado: (id, metodoPago = 'EFECTIVO') => ApiService.request(`${API_BASE_URL}/anotados-combo/${id}/pagar?metodoPago=${metodoPago}`, { method: 'PUT' })
 };
 
-// 8. AnotadosMenu Service
-export const AnotadosMenuService = {
-  create: (data) => ApiService.request(`${API_BASE_URL}/anotados-menu`, {
-    method: 'POST',
-    body: {
-      cantidad: parseInt(data.cantidad || 1, 10),
-      precioUnitario: parseFloat(data.precioUnitario || 0),
-      fechaAnotado: data.fechaAnotado || new Date().toISOString(),
-      estado: data.estado || 'PENDIENTE',
-      clienteId: parseInt(data.clienteId, 10),
-      menuDiarioId: parseInt(data.menuDiarioId, 10)
-    }
-  }),
-  getPaged: (page = 0, size = DEFAULT_PAGE_SIZE) => ApiService.request(`${API_BASE_URL}/anotados-menu?page=${page}&size=${size}`),
-  getByCliente: (clienteId, page = 0, size = 15) => ApiService.request(`${API_BASE_URL}/anotados-menu/cliente/${clienteId}?page=${page}&size=${size}`),
-  delete: (id) => ApiService.request(`${API_BASE_URL}/anotados-menu/${id}`, { method: 'DELETE' }),
-  marcarComoPagado: (id, metodoPago = 'EFECTIVO') => ApiService.request(`${API_BASE_URL}/anotados-menu/${id}/pagar?metodoPago=${metodoPago}`, { method: 'PUT' })
-};
-
 // Global export for non-module usage if needed
 window.KioskoAPI = {
   Clientes: ClientesService,
@@ -474,8 +428,6 @@ window.KioskoAPI = {
   Anotados: AnotadosService,
   Pagos: PagosService,
   Auth: AuthService,
-  MenuDiarios: MenuDiariosService,
   Combos: CombosService,
-  AnotadosCombo: AnotadosComboService,
-  AnotadosMenu: AnotadosMenuService
+  AnotadosCombo: AnotadosComboService
 };

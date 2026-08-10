@@ -164,11 +164,13 @@ class AppModalProduct extends HTMLElement {
               <div>
                 <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Unidad de Medida *</label>
                 <select name="unidadMedida" id="prod-unit" required class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md">
-                  <option value="unidad">Unidad (unidad)</option>
                   <option value="kg">Kilogramo (kg)</option>
+                  <option value="unidad">Unidad (unidad)</option>
                   <option value="decena">Decena (decena)</option>
                   <option value="litro">Litro (litro)</option>
                   <option value="caja">Caja (caja)</option>
+                  <option value="porcion">Porción (porcion)</option>
+                  <option value="docena">Docena (docena)</option>
                 </select>
               </div>
             </div>

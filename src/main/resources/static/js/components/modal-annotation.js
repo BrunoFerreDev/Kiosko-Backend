@@ -1,4 +1,4 @@
-import { ClientesService, ProductosService, AnotadosService, CombosService, MenuDiariosService, AnotadosComboService, AnotadosMenuService } from '../services/api.js';
+import { ClientesService, ProductosService, AnotadosService, CombosService, AnotadosComboService } from '../services/api.js';
 
 class AppModalAnnotation extends HTMLElement {
   connectedCallback() {
@@ -6,9 +6,8 @@ class AppModalAnnotation extends HTMLElement {
     this.availableProducts = [];
     this.availableClients = [];
     this.availableCombos = [];
-    this.availableMenus = [];
     this.loadingData = false;
-    this.annotationType = 'product'; // 'product' | 'combo' | 'menu'
+    this.annotationType = 'product'; // 'product' | 'combo'
 
     this.render();
   }
@@ -16,17 +15,15 @@ class AppModalAnnotation extends HTMLElement {
   async loadCatalogs() {
     this.loadingData = true;
     try {
-      const [clientsResp, prodsResp, combosResp, menusResp] = await Promise.all([
+      const [clientsResp, prodsResp, combosResp] = await Promise.all([
         ClientesService.getAll().catch(() => []),
         ProductosService.getAll().catch(() => []),
-        CombosService.getActivos().catch(() => []),
-        MenuDiariosService.getAll().catch(() => [])
+        CombosService.getActivos().catch(() => [])
       ]);
 
       this.availableClients = Array.isArray(clientsResp) ? clientsResp : (clientsResp.content || []);
       this.availableProducts = Array.isArray(prodsResp) ? prodsResp : (prodsResp.content || []);
       this.availableCombos = Array.isArray(combosResp) ? combosResp : (combosResp.content || []);
-      this.availableMenus = Array.isArray(menusResp) ? menusResp : (menusResp.content || []);
     } catch (err) {
       console.warn('No se pudo cargar catálogos desde la API:', err);
     } finally {
@@ -58,12 +55,6 @@ class AppModalAnnotation extends HTMLElement {
         prodSelect.innerHTML = `<option value="">-- Elegir combo activo (${this.availableCombos.length}) --</option>` +
           this.availableCombos.map(c => {
             return `<option value="${c.comboId}">${c.nombre} - $${(c.precio || 0).toLocaleString('es-AR')}</option>`;
-          }).join('');
-      } else if (this.annotationType === 'menu') {
-        prodSelect.innerHTML = `<option value="">-- Elegir menú diario (${this.availableMenus.length}) --</option>` +
-          this.availableMenus.map(m => {
-            const dateStr = m.fecha ? new Date(m.fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '—';
-            return `<option value="${m.menuDiarioId}">${m.nombre} (${dateStr}) - $${(m.precio || 0).toLocaleString('es-AR')}</option>`;
           }).join('');
       }
     }
@@ -109,7 +100,6 @@ class AppModalAnnotation extends HTMLElement {
               <div class="flex bg-surface-container rounded-xl p-1 gap-1 w-full border border-outline-variant/30">
                 <button type="button" class="annotation-type-btn flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer" data-type="product">Producto</button>
                 <button type="button" class="annotation-type-btn flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer" data-type="combo">Combo</button>
-                <button type="button" class="annotation-type-btn flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer" data-type="menu">Menú Diario</button>
               </div>
 
               <!-- Buscador de producto por nombre o categoría (only visible for product type) -->
@@ -224,15 +214,6 @@ class AppModalAnnotation extends HTMLElement {
             return AnotadosComboService.create({
               clienteId: data.clienteId,
               comboId: item.id,
-              cantidad: item.qty,
-              precioUnitario: item.price,
-              fechaAnotado: new Date().toISOString(),
-              estado: 'PENDIENTE'
-            });
-          } else if (item.type === 'menu') {
-            return AnotadosMenuService.create({
-              clienteId: data.clienteId,
-              menuDiarioId: item.id,
               cantidad: item.qty,
               precioUnitario: item.price,
               fechaAnotado: new Date().toISOString(),
@@ -398,12 +379,6 @@ class AppModalAnnotation extends HTMLElement {
       name = `[Combo] ${combo.nombre}`;
       price = combo.precio || 0;
       unidadMedida = 'combo';
-    } else if (this.annotationType === 'menu') {
-      const menu = this.availableMenus.find(m => String(m.menuDiarioId) === String(id));
-      if (!menu) return;
-      name = `[Menú] ${menu.nombre}`;
-      price = menu.precio || 0;
-      unidadMedida = 'menú';
     }
 
     const existingIndex = this.items.findIndex(item => String(item.id) === String(id) && item.type === this.annotationType);
@@ -456,6 +431,10 @@ class AppModalAnnotation extends HTMLElement {
             return 'litro';
           case 'caja':
             return 'caja';
+          case 'porcion':
+            return 'porción';
+          case 'docena':
+            return 'docena';
           default:
             return 'un.';
         }

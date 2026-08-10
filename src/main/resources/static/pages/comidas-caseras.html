@@ -35,8 +35,8 @@
     <script type="module" src="../js/components/kpi-card.js"></script>
     <script type="module" src="../js/components/modal-client.js"></script>
     <script type="module" src="../js/components/modal-annotation.js"></script>
-    <script type="module" src="../js/components/modal-menu-diario.js"></script>
     <script type="module" src="../js/components/modal-combo.js"></script>
+    <script type="module" src="../js/components/modal-product.js"></script>
     <script type="module" src="../js/components/comidas-caseras.js"></script>
     <script type="module" src="../js/app.js"></script>
   </head>
@@ -56,7 +56,7 @@
         <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-3 mb-6">
           <div>
             <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">
-              Menú del día & Combos especiales
+              Platos del día & Combos especiales
             </p>
             <h1
               class="font-display-lg text-2xl sm:text-3xl lg:text-display-lg text-on-surface font-bold"
@@ -70,9 +70,9 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-card-gap mb-6">
           <app-kpi-card
             id="kpi-menus-total"
-            title="Menús Disponibles"
+            title="Platos Disponibles"
             value="0"
-            tag="Registrados"
+            tag="En Catálogo"
             icon="restaurant_menu"
           >
           </app-kpi-card>
@@ -95,7 +95,7 @@
     <!-- Global Modals -->
     <app-modal-client></app-modal-client>
     <app-modal-annotation></app-modal-annotation>
-    <app-modal-menu-diario></app-modal-menu-diario>
+    <app-modal-product></app-modal-product>
     <app-modal-combo></app-modal-combo>
   </body>
 </html>

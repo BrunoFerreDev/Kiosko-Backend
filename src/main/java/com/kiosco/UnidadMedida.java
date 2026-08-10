@@ -7,7 +7,10 @@ public enum UnidadMedida {
     UNIDAD("unidad"),
     DECENA("decena"),
     LITRO("litro"),
-    CAJA("caja");
+    CAJA("caja"),
+    PORCION("porcion"),
+    DOCENA("docena");
+
 
     private final String abreviatura;
 

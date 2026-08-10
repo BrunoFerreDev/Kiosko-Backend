@@ -21,10 +21,6 @@ window.openProductModal = (productData = null) => {
   document.querySelector('app-modal-product')?.open(productData);
 };
 
-window.openMenuDiarioModal = (menuData = null) => {
-  document.querySelector('app-modal-menu-diario')?.open(menuData);
-};
-
 window.openComboModal = (comboData = null) => {
   document.querySelector('app-modal-combo')?.open(comboData);
 };
