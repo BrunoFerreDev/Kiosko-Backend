@@ -31,13 +31,8 @@ public class MenuDiarioServiceImpl implements MenuDiarioService {
     @Override
     @Transactional
     public MenuDiarioDTO crear(MenuDiarioR request) {
-        LocalDate fecha = request.fecha() != null ? request.fecha() : LocalDate.now();
-        if (menuDiarioRepo.existsByFecha(fecha)) {
-            throw new BadRequestException("Ya existe un menú diario para la fecha: " + fecha);
-        }
-
         MenuDiario menuDiario = new MenuDiario();
-        menuDiario.setFecha(fecha);
+        menuDiario.setFecha(request.fecha());
         menuDiario.setNombre(request.nombre());
         menuDiario.setPrecio(request.precio());
         MenuDiario guardado = menuDiarioRepo.save(menuDiario);
