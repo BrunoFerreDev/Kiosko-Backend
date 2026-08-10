@@ -39,6 +39,10 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public ProductoDTO crear(ProductoR request) {
+        if (productoRepo.existsByNombreIgnoreCaseAndMarcaIdAndCategoriaIdAndEstadoTrue(request.nombre(), request.marca(), request.categoria())) {
+            throw new BadRequestException("Ya existe un producto con el mismo nombre, marca y categoría.");
+        }
+
         Producto producto = new Producto();
         producto.setNombre(request.nombre());
         producto.setMarcaId(request.marca());
@@ -70,20 +74,20 @@ public class ProductoServiceImpl implements ProductoService {
             spec = spec.and((root, query, cb) ->
                     cb.like(cb.lower(root.get("nombre")), "%" + nombre.toLowerCase() + "%"));
         }
-        /*if (marca != null && !marca.isBlank()) {
+        if (marca != null && !marca.isBlank()) {
             List<Long> idsMarca = marcaFileService.buscarIdsPorNombre(marca);
             if (idsMarca.isEmpty()) {
                 return Page.empty(pageable);
             }
             spec = spec.and((root, query, cb) -> root.get("marcaId").in(idsMarca));
-        }*/
-      /*  if (categoria != null && !categoria.isBlank()) {
+        }
+        if (categoria != null && !categoria.isBlank()) {
             List<Long> idsCategoria = categoriaFileService.buscarIdsPorNombre(categoria);
             if (idsCategoria.isEmpty()) {
                 return Page.empty(pageable);
             }
             spec = spec.and((root, query, cb) -> root.get("categoriaId").in(idsCategoria));
-        }*/
+        }
         if (precioMin != null) {
             spec = spec.and((root, query, cb) ->
                     cb.greaterThanOrEqualTo(root.get("precioVenta"), precioMin));
@@ -112,6 +116,11 @@ public class ProductoServiceImpl implements ProductoService {
 
         if (request.categoria() != null) {
             categoriaFileService.buscarPorId(request.categoria()).orElseThrow(() -> new NotFoundException("Categoría no encontrada con ID: " + request.categoria()));
+        }
+
+        // Validamos duplicados excluyendo el ID actual para todos los casos sin excepcion
+        if (productoRepo.existsByNombreIgnoreCaseAndMarcaIdAndCategoriaIdAndEstadoTrueAndProductoIdNot(request.nombre(), request.marca(), request.categoria(), id)) {
+            throw new BadRequestException("Ya existe otro producto con el mismo nombre, marca y categoría.");
         }
 
         // 3. Asignar atributos

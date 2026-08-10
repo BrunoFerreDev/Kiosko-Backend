@@ -39,4 +39,6 @@ public class Producto {
     @OneToMany(mappedBy = "producto", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<AnotadoProducto> anotados = new HashSet<>();
 
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<MenuDiarioItem> menuDiarioItems = new HashSet<>();
 }

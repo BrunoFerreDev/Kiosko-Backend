@@ -58,5 +58,11 @@
     "codigo": "ENLATADOS",
     "nombre": "Enlatados",
     "descripcion": "Todo tipo de productos enlatados!"
+  },
+  {
+    "id": 10,
+    "codigo": "PASTAS",
+    "nombre": "Pastas",
+    "descripcion": ""
   }
 ]
