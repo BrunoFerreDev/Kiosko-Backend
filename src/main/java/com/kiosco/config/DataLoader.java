@@ -72,7 +72,7 @@ public class DataLoader implements CommandLineRunner {
             categoriaFileService.crearCategoria("ALMACEN", "Almacén y Galletitas", "Yerba, azúcar, galletitas dulces y saladas, fideos");
             categoriaFileService.crearCategoria("CIGARRILLOS", "Cigarrillos y Tabaco", "Atados de cigarrillos, encendedores y sedas");
             categoriaFileService.crearCategoria("FIAMBRERIA", "Fiambrería y Lácteos", "Quesos, fiambres, yogures, leches y manteca");
-            categoriaFileService.crearCategoria("CASERO", "Comidas Caseras", "Comidas caseeras, pizza, hamburguesa");
+            categoriaFileService.crearCategoria("CASERO", "Caseros", "Comidas caseeras, pizza, hamburguesa");
         }
     }
 
@@ -85,7 +85,7 @@ public class DataLoader implements CommandLineRunner {
             marcaFileService.crearMarca("LA_SERENISIMA", "La Serenísima");
             marcaFileService.crearMarca("MARLBORO", "Marlboro");
             marcaFileService.crearMarca("MONTECATINI", "Montecatini");
-            marcaFileService.crearMarca("PPTS", "Los pipitos,marca del kiosco");
+            marcaFileService.crearMarca("PPTS", "Pipitos");
         }
     }
 

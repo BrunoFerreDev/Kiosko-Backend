@@ -49,20 +49,14 @@
   },
   {
     "id": 8,
-    "codigo": "CSRS",
-    "nombre": "Caseros",
-    "descripcion": "Comidas caseras"
-  },
-  {
-    "id": 9,
     "codigo": "ENLATADOS",
     "nombre": "Enlatados",
     "descripcion": "Todo tipo de productos enlatados!"
   },
   {
-    "id": 10,
+    "id": 9,
     "codigo": "PASTAS",
     "nombre": "Pastas",
-    "descripcion": ""
+    "descripcion": "Todo tipo de pastas"
   }
 ]
