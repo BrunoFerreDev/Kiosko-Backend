@@ -2,8 +2,12 @@ package com.kiosco.service.impl;
 
 import com.kiosco.dto.MenuDiarioDTO;
 import com.kiosco.model.MenuDiario;
+import com.kiosco.model.MenuDiarioItem;
+import com.kiosco.model.Producto;
 import com.kiosco.record.MenuDiarioR;
+import com.kiosco.repository.MenuDiarioItemRepo;
 import com.kiosco.repository.MenuDiarioRepo;
+import com.kiosco.repository.ProductoRepo;
 import com.kiosco.service.MenuDiarioService;
 import com.kiosco.utils.BadRequestException;
 import com.kiosco.utils.NotFoundException;
@@ -21,6 +25,8 @@ import java.util.List;
 public class MenuDiarioServiceImpl implements MenuDiarioService {
 
     private final MenuDiarioRepo menuDiarioRepo;
+    private final MenuDiarioItemRepo menuDiarioItemRepo;
+    private final ProductoRepo productoRepo;
 
     @Override
     @Transactional
@@ -34,8 +40,20 @@ public class MenuDiarioServiceImpl implements MenuDiarioService {
         menuDiario.setFecha(fecha);
         menuDiario.setNombre(request.nombre());
         menuDiario.setPrecio(request.precio());
-
         MenuDiario guardado = menuDiarioRepo.save(menuDiario);
+
+        if (request.productoIds() != null) {
+            for (Long prodId : request.productoIds()) {
+                Producto prod = productoRepo.findById(prodId)
+                        .orElseThrow(() -> new NotFoundException("Producto no encontrado con ID: " + prodId));
+                MenuDiarioItem item = new MenuDiarioItem();
+                item.setMenuDiario(guardado);
+                item.setProducto(prod);
+                menuDiarioItemRepo.save(item);
+                guardado.getMenuDiarioItems().add(item);
+            }
+        }
+
         return new MenuDiarioDTO(guardado);
     }
 
@@ -72,6 +90,21 @@ public class MenuDiarioServiceImpl implements MenuDiarioService {
         }
         if (request.precio() != null) {
             menuDiario.setPrecio(request.precio());
+        }
+
+        if (request.productoIds() != null) {
+            menuDiarioItemRepo.deleteByMenuDiarioMenuDiarioId(id);
+            menuDiario.getMenuDiarioItems().clear();
+
+            for (Long prodId : request.productoIds()) {
+                Producto prod = productoRepo.findById(prodId)
+                        .orElseThrow(() -> new NotFoundException("Producto no encontrado con ID: " + prodId));
+                MenuDiarioItem item = new MenuDiarioItem();
+                item.setMenuDiario(menuDiario);
+                item.setProducto(prod);
+                menuDiarioItemRepo.save(item);
+                menuDiario.getMenuDiarioItems().add(item);
+            }
         }
 
         return new MenuDiarioDTO(menuDiarioRepo.save(menuDiario));

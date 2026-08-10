@@ -101,48 +101,65 @@ class AppTableClients extends HTMLElement {
     const showAdmin = window.KioskoAPI?.Auth?.isAdmin();
     const adminClass = showAdmin ? '' : 'hidden';
 
-    const rowsHtml = this.clients.map(cli => {
-      const saldo = parseFloat(cli.saldoPendiente || 0);
-      const saldoFormatted = saldo > 0 ? `$ ${saldo.toLocaleString('es-AR')}` : '$ 0';
-      const saldoColor = saldo > 0 ? 'text-error font-bold' : 'text-on-surface';
-
-      return `
-        <tr class="border-b border-outline-variant/10 hover:bg-surface-container-lowest/50 transition-colors">
-          <td class="px-4 sm:px-6 py-4">
-            <div>
-              <a href="cliente-detalle.html?id=${cli.clienteId}" class="font-semibold text-on-surface hover:text-primary transition-colors text-sm sm:text-base">${cli.nombreCompleto}</a>
-              <p class="text-xs text-on-surface-variant">ID: #${cli.clienteId}</p>
-            </div>
-          </td>
-          <!-- Hidden on Mobile -->
-          <td class="hidden sm:table-cell px-6 py-4 text-on-surface-variant text-sm">
-            ${cli.whatsApp ? `
-              <a href="https://wa.me/549${cli.whatsApp}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-primary hover:text-primary-fixed-variant hover:underline transition-colors font-medium">
-                <svg class="w-4 h-4 text-[#25D366] fill-current" viewBox="0 0 24 24">
-                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.504-5.717-1.465L0 24zm6.59-4.846c1.6.95 3.197 1.451 4.757 1.452 5.4 0 9.795-4.402 9.797-9.817.002-2.624-1.023-5.093-2.887-6.959-1.866-1.865-4.343-2.891-6.969-2.893-5.401 0-9.798 4.402-9.8 9.818 0 1.748.458 3.453 1.328 4.966l-.993 3.63 3.714-.975zm11.367-7.051c-.302-.15-1.785-.882-2.062-.982-.277-.1-.478-.15-.679.15-.2.3-.777.982-.953 1.183-.176.2-.353.226-.655.076-.301-.15-1.274-.47-2.426-1.498-.896-.799-1.502-1.786-1.678-2.086-.176-.3-.019-.462.13-.612.135-.135.302-.35.453-.526.15-.176.2-.3.301-.5.101-.2.05-.376-.026-.526-.076-.15-.679-1.636-.93-2.247-.244-.587-.492-.507-.679-.516-.175-.008-.376-.01-.577-.01-.2 0-.527.075-.803.376-.277.301-1.055 1.029-1.055 2.508 0 1.479 1.079 2.906 1.229 3.107.152.2 2.124 3.243 5.143 4.545.718.31 1.279.496 1.716.635.722.23 1.38.197 1.9.119.579-.087 1.786-.73 2.037-1.436.25-.706.25-1.311.176-1.436-.076-.126-.277-.2-.579-.35z"/>
-                </svg>
-                <span>+54 9 ${cli.whatsApp}</span>
-              </a>
-            ` : '<span class="text-outline/60 italic text-xs">Sin WhatsApp</span>'}
-          </td>
-          <!-- Real Saldo Pendiente -->
-          <td class="px-4 sm:px-6 py-4 text-right ${saldoColor} text-sm sm:text-base">
-            ${saldoFormatted}
-          </td>
-          <td class="px-4 sm:px-6 py-4 text-right">
-            <div class="flex items-center justify-end gap-1.5 sm:gap-2">
-              <a href="cliente-detalle.html?id=${cli.clienteId}" class="h-8 sm:h-9 px-2.5 sm:px-3 bg-surface-container-high hover:bg-surface-container-highest text-primary rounded-lg text-xs font-bold transition-colors flex items-center gap-1">
-                <span class="material-symbols-outlined text-sm">visibility</span>
-                <span class="hidden sm:inline">Ver Ficha</span>
-              </a>
-              <button data-delete-id="${cli.clienteId}" class="btn-delete-cli h-8 sm:h-9 px-2 text-error hover:bg-error-container/30 rounded-lg text-xs transition-colors cursor-pointer ${adminClass}" title="Eliminar">
-                <span class="material-symbols-outlined text-sm">delete</span>
-              </button>
+    let rowsHtml = '';
+    if (this.clients.length === 0) {
+      rowsHtml = `
+        <tr>
+          <td colspan="4" class="px-4 sm:px-6 py-12 text-center text-on-surface-variant">
+            <div class="flex flex-col items-center justify-center gap-3 py-6">
+              <span class="material-symbols-outlined text-5xl text-outline-variant/70 animate-pulse">groups</span>
+              <div>
+                <p class="font-semibold text-on-surface text-base">No hay clientes registrados</p>
+                <p class="text-sm text-on-surface-variant mt-1">Registrá nuevos clientes para verlos en el directorio.</p>
+              </div>
             </div>
           </td>
         </tr>
       `;
-    }).join('');
+    } else {
+      rowsHtml = this.clients.map(cli => {
+        const saldo = parseFloat(cli.saldoPendiente || 0);
+        const saldoFormatted = saldo > 0 ? `$ ${saldo.toLocaleString('es-AR')}` : '$ 0';
+        const saldoColor = saldo > 0 ? 'text-error font-bold' : 'text-on-surface';
+
+        return `
+          <tr class="border-b border-outline-variant/10 hover:bg-surface-container-lowest/50 transition-colors">
+            <td class="px-4 sm:px-6 py-4">
+              <div>
+                <a href="cliente-detalle.html?id=${cli.clienteId}" class="font-semibold text-on-surface hover:text-primary transition-colors text-sm sm:text-base">${cli.nombreCompleto}</a>
+                <p class="text-xs text-on-surface-variant">ID: #${cli.clienteId}</p>
+              </div>
+            </td>
+            <!-- Hidden on Mobile -->
+            <td class="hidden sm:table-cell px-6 py-4 text-on-surface-variant text-sm">
+              ${cli.whatsApp ? `
+                <a href="https://wa.me/549${cli.whatsApp}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-primary hover:text-primary-fixed-variant hover:underline transition-colors font-medium">
+                  <svg class="w-4 h-4 text-[#25D366] fill-current" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.504-5.717-1.465L0 24zm6.59-4.846c1.6.95 3.197 1.451 4.757 1.452 5.4 0 9.795-4.402 9.797-9.817.002-2.624-1.023-5.093-2.887-6.959-1.866-1.865-4.343-2.891-6.969-2.893-5.401 0-9.798 4.402-9.8 9.818 0 1.748.458 3.453 1.328 4.966l-.993 3.63 3.714-.975zm11.367-7.051c-.302-.15-1.785-.882-2.062-.982-.277-.1-.478-.15-.679.15-.2.3-.777.982-.953 1.183-.176.2-.353.226-.655.076-.301-.15-1.274-.47-2.426-1.498-.896-.799-1.502-1.786-1.678-2.086-.176-.3-.019-.462.13-.612.135-.135.302-.35.453-.526.15-.176.2-.3.301-.5.101-.2.05-.376-.026-.526-.076-.15-.679-1.636-.93-2.247-.244-.587-.492-.507-.679-.516-.175-.008-.376-.01-.577-.01-.2 0-.527.075-.803.376-.277.301-1.055 1.029-1.055 2.508 0 1.479 1.079 2.906 1.229 3.107.152.2 2.124 3.243 5.143 4.545.718.31 1.279.496 1.716.635.722.23 1.38.197 1.9.119.579-.087 1.786-.73 2.037-1.436.25-.706.25-1.311.176-1.436-.076-.126-.277-.2-.579-.35z"/>
+                  </svg>
+                  <span>+54 9 ${cli.whatsApp}</span>
+                </a>
+              ` : '<span class="text-outline/60 italic text-xs">Sin WhatsApp</span>'}
+            </td>
+            <!-- Real Saldo Pendiente -->
+            <td class="px-4 sm:px-6 py-4 text-right ${saldoColor} text-sm sm:text-base">
+              ${saldoFormatted}
+            </td>
+            <td class="px-4 sm:px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-1.5 sm:gap-2">
+                <a href="cliente-detalle.html?id=${cli.clienteId}" class="h-8 sm:h-9 px-2.5 sm:px-3 bg-surface-container-high hover:bg-surface-container-highest text-primary rounded-lg text-xs font-bold transition-colors flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">visibility</span>
+                  <span class="hidden sm:inline">Ver Ficha</span>
+                </a>
+                <button data-delete-id="${cli.clienteId}" class="btn-delete-cli h-8 sm:h-9 px-2 text-error hover:bg-error-container/30 rounded-lg text-xs transition-colors cursor-pointer ${adminClass}" title="Eliminar">
+                  <span class="material-symbols-outlined text-sm">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
 
     this.innerHTML = `
       <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden flex flex-col">

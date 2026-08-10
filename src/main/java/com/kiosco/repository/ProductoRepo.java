@@ -13,13 +13,17 @@ import java.util.List;
 @Repository
 public interface ProductoRepo extends JpaRepository<Producto, Long>, JpaSpecificationExecutor<Producto> {
     List<Producto> findByEstadoTrue();
+
     Page<Producto> findByEstadoTrue(Pageable pageable);
 
+    boolean existsByNombreIgnoreCaseAndMarcaIdAndCategoriaIdAndEstadoTrue(String nombre, Long marcaId, Long categoriaId);
+
+    boolean existsByNombreIgnoreCaseAndMarcaIdAndCategoriaIdAndEstadoTrueAndProductoIdNot(String nombre, Long marcaId, Long categoriaId, Long productoId);
+}
   /*  @Query("SELECT DISTINCT p.categoria FROM Producto p")
     List<String> findCategoriasUnicas();
 
     @Query("SELECT DISTINCT p.marca FROM Producto p")
     List<String> findMarcasUnicas();*/
-}
 
 

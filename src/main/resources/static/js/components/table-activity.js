@@ -87,27 +87,44 @@ class AppTableActivity extends HTMLElement {
   }
 
   render() {
-    const rowsHtml = this.activities.map(act => {
-      const dateObj = new Date(act.date);
-      const dateShort = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-      const dateFull = dateObj.toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
-
-      return `
-        <tr class="border-b border-outline-variant/10 hover:bg-surface-container-lowest/50 transition-colors">
-          <td class="px-4 sm:px-6 py-4">
-            <a href="pages/cliente-detalle.html?id=${act.clientId}" class="font-semibold text-on-surface hover:text-primary transition-colors text-sm sm:text-base">${act.client}</a>
-          </td>
-          <td class="px-4 sm:px-6 py-4 text-on-surface-variant text-xs sm:text-sm">${act.detail}</td>
-          <td class="px-4 sm:px-6 py-4 text-right font-bold ${act.status === 'COMPLETADO' ? 'text-primary' : 'text-error'} text-sm sm:text-base">
-            ${act.status === 'COMPLETADO' ? '-$' : '+$'} ${act.amount.toLocaleString('es-AR')}
-          </td>
-          <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap text-on-surface-variant text-xs">
-            <span class="sm:hidden font-semibold">${dateShort}</span>
-            <span class="hidden sm:inline">${dateFull}</span>
+    let rowsHtml = '';
+    if (this.activities.length === 0) {
+      rowsHtml = `
+        <tr>
+          <td colspan="4" class="px-4 sm:px-6 py-12 text-center text-on-surface-variant">
+            <div class="flex flex-col items-center justify-center gap-3 py-6">
+              <span class="material-symbols-outlined text-5xl text-outline-variant/70 animate-pulse">schedule</span>
+              <div>
+                <p class="font-semibold text-on-surface text-base">No hay actividad reciente</p>
+                <p class="text-sm text-on-surface-variant mt-1">Las compras y pagos que realicen los clientes aparecerán acá.</p>
+              </div>
+            </div>
           </td>
         </tr>
       `;
-    }).join('');
+    } else {
+      rowsHtml = this.activities.map(act => {
+        const dateObj = new Date(act.date);
+        const dateShort = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+        const dateFull = dateObj.toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
+
+        return `
+          <tr class="border-b border-outline-variant/10 hover:bg-surface-container-lowest/50 transition-colors">
+            <td class="px-4 sm:px-6 py-4">
+              <a href="pages/cliente-detalle.html?id=${act.clientId}" class="font-semibold text-on-surface hover:text-primary transition-colors text-sm sm:text-base">${act.client}</a>
+            </td>
+            <td class="px-4 sm:px-6 py-4 text-on-surface-variant text-xs sm:text-sm">${act.detail}</td>
+            <td class="px-4 sm:px-6 py-4 text-right font-bold ${act.status === 'COMPLETADO' ? 'text-primary' : 'text-error'} text-sm sm:text-base">
+              ${act.status === 'COMPLETADO' ? '-$' : '+$'} ${act.amount.toLocaleString('es-AR')}
+            </td>
+            <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap text-on-surface-variant text-xs">
+              <span class="sm:hidden font-semibold">${dateShort}</span>
+              <span class="hidden sm:inline">${dateFull}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
 
     this.innerHTML = `
       <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden flex flex-col">

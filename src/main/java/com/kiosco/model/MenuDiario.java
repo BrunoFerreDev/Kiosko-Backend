@@ -27,5 +27,6 @@ public class MenuDiario {
     @OneToMany(mappedBy = "menuDiario")
     private Set<AnotadoMenu> menuSet = new HashSet<>();
 
-
+    @OneToMany(mappedBy = "menuDiario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<MenuDiarioItem> menuDiarioItems = new HashSet<>();
 }

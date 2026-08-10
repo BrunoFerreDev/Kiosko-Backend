@@ -3,9 +3,6 @@ spring:
     name: kiosco
   datasource:
     url: ${DB_URL}
-    #url: jdbc:postgresql://localhost:5432/postgres
-    #username: develop
-    #password: develop123
     username: ${DB_USER}
     password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
