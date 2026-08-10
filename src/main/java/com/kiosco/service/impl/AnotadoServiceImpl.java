@@ -6,7 +6,6 @@ import com.kiosco.model.Anotado;
 import com.kiosco.model.subModel.Cliente;
 import com.kiosco.model.Producto;
 import com.kiosco.model.subModel.AnotadoCombo;
-import com.kiosco.model.subModel.AnotadoMenu;
 import com.kiosco.model.subModel.AnotadoProducto;
 import com.kiosco.record.AnotadoR;
 import com.kiosco.repository.AnotadoRepo;
@@ -132,8 +131,6 @@ public class AnotadoServiceImpl implements AnotadoService {
                             .map(a -> {
                                 if (a instanceof AnotadoProducto ap && ap.getProducto() != null)
                                     return ap.getProducto().getNombre();
-                                if (a instanceof AnotadoMenu am && am.getMenuDiario() != null)
-                                    return am.getMenuDiario().getNombre();
                                 if (a instanceof AnotadoCombo ac && ac.getCombo() != null)
                                     return ac.getCombo().getNombre();
                                 return "Item";
