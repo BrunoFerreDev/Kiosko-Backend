@@ -36,9 +36,9 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        cargarAdmins();
+      /*  cargarAdmins();
         cargarCategorias();
-        cargarMarcas();
+        cargarMarcas();*/
     }
 
     private void cargarAdmins() {
