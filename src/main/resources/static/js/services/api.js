@@ -1,4 +1,5 @@
 const DEFAULT_PAGE_SIZE = 10;
+const API_BASE_URL = '';
 
 class ApiService {
   static async request(endpoint, options = {}) {
@@ -25,8 +26,12 @@ class ApiService {
       config.body = JSON.stringify(config.body);
     }
 
+    const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
+      ? endpoint
+      : `${API_BASE_URL}/${endpoint.startsWith('/') ? endpoint.slice(1) : endpoint}`;
+
     try {
-      const response = await fetch(`${endpoint}`, config);
+      const response = await fetch(url, config);
 
       if (response.status === 204) {
         return { success: true };
@@ -56,7 +61,7 @@ class ApiService {
         }
       }
     } catch (error) {
-      console.error(`API Error on [${config.method || 'GET'}] ${endpoint}:`, error);
+      console.error(`API Error on [${config.method || 'GET'}] ${url}:`, error);
       throw error;
     }
   }
@@ -64,17 +69,17 @@ class ApiService {
 
 // 1. Clientes Service
 export const ClientesService = {
-  getAll: () => ApiService.request('/clientes'),
+  getAll: () => ApiService.request(`${API_BASE_URL}/clientes`),
 
   getPaged: (page = 0, size = DEFAULT_PAGE_SIZE, sort = '') => {
     const params = new URLSearchParams({ page, size: DEFAULT_PAGE_SIZE });
     if (sort) params.append('sort', sort);
-    return ApiService.request(`/clientes?${params.toString()}`);
+    return ApiService.request(`${API_BASE_URL}/clientes?${params.toString()}`);
   },
 
-  getById: (id) => ApiService.request(`/clientes/${id}`),
+  getById: (id) => ApiService.request(`${API_BASE_URL}/clientes/${id}`),
 
-  create: (data) => ApiService.request('/clientes', {
+  create: (data) => ApiService.request(`${API_BASE_URL}/clientes`, {
     method: 'POST',
     body: {
       nombre: data.nombre || data.name || '',
@@ -85,7 +90,7 @@ export const ClientesService = {
     }
   }),
 
-  update: (id, data) => ApiService.request(`/clientes/${id}`, {
+  update: (id, data) => ApiService.request(`${API_BASE_URL}/clientes/${id}`, {
     method: 'PUT',
     body: {
       nombre: data.nombre || data.name || '',
@@ -96,17 +101,17 @@ export const ClientesService = {
     }
   }),
 
-  delete: (id) => ApiService.request(`/clientes/${id}`, { method: 'DELETE' })
+  delete: (id) => ApiService.request(`${API_BASE_URL}/clientes/${id}`, { method: 'DELETE' })
 };
 
 // 2. Productos Service
 export const ProductosService = {
-  getAll: () => ApiService.request('/productos'),
+  getAll: () => ApiService.request(`${API_BASE_URL}/productos`),
 
   getPaged: (page = 0, size = DEFAULT_PAGE_SIZE, sort = '') => {
     const params = new URLSearchParams({ page, size: DEFAULT_PAGE_SIZE });
     if (sort) params.append('sort', sort);
-    return ApiService.request(`/productos?${params.toString()}`);
+    return ApiService.request(`${API_BASE_URL}/productos?${params.toString()}`);
   },
 
   search: (filters = {}) => {
@@ -125,14 +130,14 @@ export const ProductosService = {
         params.append('sort', filters.sort);
       }
     }
-    return ApiService.request(`/productos/buscar?${params.toString()}`);
+    return ApiService.request(`${API_BASE_URL}/productos/buscar?${params.toString()}`);
   },
 
-  getCategorias: () => ApiService.request('/categorias'),
+  getCategorias: () => ApiService.request(`${API_BASE_URL}/categorias`),
 
-  getMarcas: () => ApiService.request('/marcas'),
+  getMarcas: () => ApiService.request(`${API_BASE_URL}/marcas`),
 
-  createCategory: (data) => ApiService.request('/categorias', {
+  createCategory: (data) => ApiService.request(`${API_BASE_URL}/categorias`, {
     method: 'POST',
     body: {
       id: null,
@@ -142,7 +147,7 @@ export const ProductosService = {
     }
   }),
 
-  createBrand: (data) => ApiService.request('/marcas', {
+  createBrand: (data) => ApiService.request(`${API_BASE_URL}/marcas`, {
     method: 'POST',
     body: {
       id: null,
@@ -151,9 +156,9 @@ export const ProductosService = {
     }
   }),
 
-  getById: (id) => ApiService.request(`/productos/${id}`),
+  getById: (id) => ApiService.request(`${API_BASE_URL}/productos/${id}`),
 
-  create: (data) => ApiService.request('/productos', {
+  create: (data) => ApiService.request(`${API_BASE_URL}/productos`, {
     method: 'POST',
     body: {
       nombre: data.nombre || data.name || '',
@@ -167,7 +172,7 @@ export const ProductosService = {
     }
   }),
 
-  update: (id, data) => ApiService.request(`/productos/${id}`, {
+  update: (id, data) => ApiService.request(`${API_BASE_URL}/productos/${id}`, {
     method: 'PUT',
     body: {
       nombre: data.nombre || data.name || '',
@@ -181,12 +186,12 @@ export const ProductosService = {
     }
   }),
 
-  delete: (id) => ApiService.request(`/productos/${id}`, { method: 'DELETE' }),
+  delete: (id) => ApiService.request(`${API_BASE_URL}/productos/${id}`, { method: 'DELETE' }),
 
   uploadExcel: (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return ApiService.request('/productos/upload', {
+    return ApiService.request(`${API_BASE_URL}/productos/upload`, {
       method: 'POST',
       body: formData
     });
@@ -198,7 +203,7 @@ export const ProductosService = {
     if (jwt) {
       headers['Authorization'] = `Bearer ${jwt}`;
     }
-    const response = await fetch('/productos/export', {
+    const response = await fetch(`${API_BASE_URL}/productos/export`, {
       method: 'GET',
       headers
     });
@@ -211,21 +216,21 @@ export const ProductosService = {
 
 // 3. Anotados Service
 export const AnotadosService = {
-  getAll: () => ApiService.request('/anotados'),
+  getAll: () => ApiService.request(`${API_BASE_URL}/anotados`),
 
-  getPaged: (page = 0, size = DEFAULT_PAGE_SIZE) => ApiService.request(`/anotados?page=${page}&size=${size}`),
+  getPaged: (page = 0, size = DEFAULT_PAGE_SIZE) => ApiService.request(`${API_BASE_URL}/anotados?page=${page}&size=${size}`),
 
   getByCliente: (clienteId, page = 0, size = 15, sort = '') => {
     const params = new URLSearchParams({ page, size });
     if (sort) params.append('sort', sort);
-    return ApiService.request(`/anotados/cliente/${clienteId}?${params.toString()}`);
+    return ApiService.request(`${API_BASE_URL}/anotados/cliente/${clienteId}?${params.toString()}`);
   },
 
-  getActividadReciente: (limite = 10) => ApiService.request(`/anotados/actividad-reciente?limite=${limite}`),
+  getActividadReciente: (limite = 10) => ApiService.request(`${API_BASE_URL}/anotados/actividad-reciente?limite=${limite}`),
 
-  getById: (id) => ApiService.request(`/anotados/${id}`),
+  getById: (id) => ApiService.request(`${API_BASE_URL}/anotados/${id}`),
 
-  create: (data) => ApiService.request('/anotados', {
+  create: (data) => ApiService.request(`${API_BASE_URL}/anotados`, {
     method: 'POST',
     body: {
       cantidad: parseInt(data.cantidad || data.qty || 1, 10),
@@ -237,21 +242,21 @@ export const AnotadosService = {
     }
   }),
 
-  update: (id, data) => ApiService.request(`/anotados/${id}`, {
+  update: (id, data) => ApiService.request(`${API_BASE_URL}/anotados/${id}`, {
     method: 'PUT',
     body: data
   }),
 
-  delete: (id) => ApiService.request(`/anotados/${id}`, { method: 'DELETE' })
+  delete: (id) => ApiService.request(`${API_BASE_URL}/anotados/${id}`, { method: 'DELETE' })
 };
 
 // 4. Pagos Service
 export const PagosService = {
-  getAll: () => ApiService.request('/pagos'),
+  getAll: () => ApiService.request(`${API_BASE_URL}/pagos`),
 
-  getById: (id) => ApiService.request(`/pagos/${id}`),
+  getById: (id) => ApiService.request(`${API_BASE_URL}/pagos/${id}`),
 
-  create: (data) => ApiService.request('/pagos', {
+  create: (data) => ApiService.request(`${API_BASE_URL}/pagos`, {
     method: 'POST',
     body: {
       metodoPago: data.metodoPago || 'EFECTIVO',
@@ -261,12 +266,12 @@ export const PagosService = {
     }
   }),
 
-  update: (id, data) => ApiService.request(`/pagos/${id}`, {
+  update: (id, data) => ApiService.request(`${API_BASE_URL}/pagos/${id}`, {
     method: 'PUT',
     body: data
   }),
 
-  delete: (id) => ApiService.request(`/pagos/${id}`, { method: 'DELETE' })
+  delete: (id) => ApiService.request(`${API_BASE_URL}/pagos/${id}`, { method: 'DELETE' })
 };
 
 // 5. MenuDiarios Service
@@ -276,24 +281,24 @@ export const MenuDiariosService = {
     urlParams.append('page', params.page !== undefined ? params.page : 0);
     urlParams.append('size', params.size || 9);
     if (params.fecha) urlParams.append('fecha', params.fecha);
-    return ApiService.request(`/menus-diarios?${urlParams.toString()}`);
+    return ApiService.request(`${API_BASE_URL}/menus-diarios?${urlParams.toString()}`);
   },
 
-  getAll: () => ApiService.request('/menus-diarios?size=100'),
+  getAll: () => ApiService.request(`${API_BASE_URL}/menus-diarios?size=100`),
 
-  getById: (id) => ApiService.request(`/menus-diarios/${id}`),
+  getById: (id) => ApiService.request(`${API_BASE_URL}/menus-diarios/${id}`),
 
-  create: (data) => ApiService.request('/menus-diarios', {
+  create: (data) => ApiService.request(`${API_BASE_URL}/menus-diarios`, {
     method: 'POST',
     body: data
   }),
 
-  update: (id, data) => ApiService.request(`/menus-diarios/${id}`, {
+  update: (id, data) => ApiService.request(`${API_BASE_URL}/menus-diarios/${id}`, {
     method: 'PUT',
     body: data
   }),
 
-  delete: (id) => ApiService.request(`/menus-diarios/${id}`, { method: 'DELETE' })
+  delete: (id) => ApiService.request(`${API_BASE_URL}/menus-diarios/${id}`, { method: 'DELETE' })
 };
 
 // 6. Combos Service
@@ -302,26 +307,26 @@ export const CombosService = {
     const urlParams = new URLSearchParams();
     urlParams.append('page', params.page !== undefined ? params.page : 0);
     urlParams.append('size', params.size || 9);
-    return ApiService.request(`/combos?${urlParams.toString()}`);
+    return ApiService.request(`${API_BASE_URL}/combos?${urlParams.toString()}`);
   },
 
-  getAll: () => ApiService.request('/combos'),
+  getAll: () => ApiService.request(`${API_BASE_URL}/combos`), 
 
-  getActivos: () => ApiService.request('/combos/activos'),
+  getActivos: () => ApiService.request(`${API_BASE_URL}/combos/activos`),
 
-  getById: (id) => ApiService.request(`/combos/${id}`),
+  getById: (id) => ApiService.request(`${API_BASE_URL}/combos/${id}`),
 
-  create: (data) => ApiService.request('/combos', {
+  create: (data) => ApiService.request(`${API_BASE_URL}/combos`, {
     method: 'POST',
     body: data
   }),
 
-  update: (id, data) => ApiService.request(`/combos/${id}`, {
+  update: (id, data) => ApiService.request(`${API_BASE_URL}/combos/${id}`, {
     method: 'PUT',
     body: data
   }),
 
-  delete: (id) => ApiService.request(`/combos/${id}`, { method: 'DELETE' })
+  delete: (id) => ApiService.request(`${API_BASE_URL}/combos/${id}`, { method: 'DELETE' })
 };
 
 const decodeJwt = (token) => {
@@ -340,7 +345,7 @@ const decodeJwt = (token) => {
 // 5. Auth Service
 export const AuthService = {
   login: async (whatsapp, contrasenia) => {
-    const response = await ApiService.request('/auth/login', {
+    const response = await ApiService.request(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       body: {
         whatsapp: whatsapp,
@@ -426,7 +431,7 @@ export const AuthService = {
 
 // 7. AnotadosCombo Service
 export const AnotadosComboService = {
-  create: (data) => ApiService.request('/anotados-combo', {
+  create: (data) => ApiService.request(`${API_BASE_URL}/anotados-combo`, {
     method: 'POST',
     body: {
       cantidad: parseInt(data.cantidad || 1, 10),
@@ -437,15 +442,15 @@ export const AnotadosComboService = {
       comboId: parseInt(data.comboId, 10)
     }
   }),
-  getPaged: (page = 0, size = DEFAULT_PAGE_SIZE) => ApiService.request(`/anotados-combo?page=${page}&size=${size}`),
-  getByCliente: (clienteId, page = 0, size = 15) => ApiService.request(`/anotados-combo/cliente/${clienteId}?page=${page}&size=${size}`),
-  delete: (id) => ApiService.request(`/anotados-combo/${id}`, { method: 'DELETE' }),
-  marcarComoPagado: (id, metodoPago = 'EFECTIVO') => ApiService.request(`/anotados-combo/${id}/pagar?metodoPago=${metodoPago}`, { method: 'PUT' })
+  getPaged: (page = 0, size = DEFAULT_PAGE_SIZE) => ApiService.request(`${API_BASE_URL}/anotados-combo?page=${page}&size=${size}`),
+  getByCliente: (clienteId, page = 0, size = 15) => ApiService.request(`${API_BASE_URL}/anotados-combo/cliente/${clienteId}?page=${page}&size=${size}`),
+  delete: (id) => ApiService.request(`${API_BASE_URL}/anotados-combo/${id}`, { method: 'DELETE' }),
+  marcarComoPagado: (id, metodoPago = 'EFECTIVO') => ApiService.request(`${API_BASE_URL}/anotados-combo/${id}/pagar?metodoPago=${metodoPago}`, { method: 'PUT' })
 };
 
 // 8. AnotadosMenu Service
 export const AnotadosMenuService = {
-  create: (data) => ApiService.request('/anotados-menu', {
+  create: (data) => ApiService.request(`${API_BASE_URL}/anotados-menu`, {
     method: 'POST',
     body: {
       cantidad: parseInt(data.cantidad || 1, 10),
@@ -456,10 +461,10 @@ export const AnotadosMenuService = {
       menuDiarioId: parseInt(data.menuDiarioId, 10)
     }
   }),
-  getPaged: (page = 0, size = DEFAULT_PAGE_SIZE) => ApiService.request(`/anotados-menu?page=${page}&size=${size}`),
-  getByCliente: (clienteId, page = 0, size = 15) => ApiService.request(`/anotados-menu/cliente/${clienteId}?page=${page}&size=${size}`),
-  delete: (id) => ApiService.request(`/anotados-menu/${id}`, { method: 'DELETE' }),
-  marcarComoPagado: (id, metodoPago = 'EFECTIVO') => ApiService.request(`/anotados-menu/${id}/pagar?metodoPago=${metodoPago}`, { method: 'PUT' })
+  getPaged: (page = 0, size = DEFAULT_PAGE_SIZE) => ApiService.request(`${API_BASE_URL}/anotados-menu?page=${page}&size=${size}`),
+  getByCliente: (clienteId, page = 0, size = 15) => ApiService.request(`${API_BASE_URL}/anotados-menu/cliente/${clienteId}?page=${page}&size=${size}`),
+  delete: (id) => ApiService.request(`${API_BASE_URL}/anotados-menu/${id}`, { method: 'DELETE' }),
+  marcarComoPagado: (id, metodoPago = 'EFECTIVO') => ApiService.request(`${API_BASE_URL}/anotados-menu/${id}/pagar?metodoPago=${metodoPago}`, { method: 'PUT' })
 };
 
 // Global export for non-module usage if needed

@@ -316,55 +316,72 @@ class AppTableHistory extends HTMLElement {
     const clienteId = this.getClienteId();
     const selectedTotal = this.getSelectedTotal();
 
-    const rowsHtml = this.movements.map(m => {
-      const dateObj = new Date(m.date);
-      const dateShort = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-      const dateFull = dateObj.toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
-
-      const isPendingAnotado = m.type !== 'pago' && m.rawItem?.estado === 'PENDIENTE';
-      const isChecked = this.selectedItemIds.has(m.uniqueId);
-
-      const amountColor = m.isPago ? 'text-primary font-bold' : 'text-error font-bold';
-      const amountPrefix = m.isPago ? '-$' : '+$';
-      const absAmount = Math.abs(m.monto).toLocaleString('es-AR');
-
-      return `
-        <tr class="border-b border-outline-variant/10 hover:bg-surface-container-lowest/50 transition-colors">
-          <td class="px-2 sm:px-4 py-3 sm:py-4 text-center">
-            ${isPendingAnotado ? `
-              <input type="checkbox" data-unique-id="${m.uniqueId}" ${isChecked ? 'checked' : ''} class="chk-select-item w-4 h-4 text-primary rounded border-outline-variant focus:ring-primary cursor-pointer" />
-            ` : ''}
-          </td>
-          
-          <td class="px-2 sm:px-4 py-3 sm:py-4 whitespace-nowrap text-on-surface-variant font-medium text-xs">
-            <span class="sm:hidden font-semibold">${dateShort}</span>
-            <span class="hidden sm:inline">${dateFull}</span>
-          </td>
-
-          <td class="px-3 sm:px-6 py-3 sm:py-4">
-            <div class="font-semibold text-on-surface text-xs sm:text-base">${m.desc}</div>
-            <div class="text-[11px] sm:text-xs text-on-surface-variant mt-0.5">${m.sub}</div>
-          </td>
-
-          <td class="px-3 sm:px-6 py-3 sm:py-4 text-right ${amountColor} text-xs sm:text-base whitespace-nowrap">
-            ${amountPrefix} ${absAmount}
-          </td>
-
-          <td class="hidden sm:table-cell px-6 py-4 text-right font-bold text-on-surface text-sm sm:text-base">
-            $ ${m.saldoAcumulado.toLocaleString('es-AR')}
-          </td>
-
-          <td class="px-2 sm:px-4 py-3 sm:py-4 text-right">
-            ${isPendingAnotado ? `
-              <button data-pay-amount="${m.monto}" data-unique-id="${m.uniqueId}" class="btn-pay-single-item h-8 px-2.5 sm:px-3 bg-primary-container text-white hover:bg-primary-fixed rounded-lg text-xs font-bold transition-colors cursor-pointer inline-flex items-center gap-1">
-                <span class="material-symbols-outlined text-xs">payments</span>
-                <span class="hidden sm:inline">Pagar</span>
-              </button>
-            ` : ''}
+    let rowsHtml = '';
+    if (this.movements.length === 0) {
+      rowsHtml = `
+        <tr>
+          <td colspan="6" class="px-4 sm:px-6 py-12 text-center text-on-surface-variant">
+            <div class="flex flex-col items-center justify-center gap-3 py-6">
+              <span class="material-symbols-outlined text-5xl text-outline-variant/70 animate-pulse">history</span>
+              <div>
+                <p class="font-semibold text-on-surface text-base">Sin movimientos registrados</p>
+                <p class="text-sm text-on-surface-variant mt-1">Este cliente no registra compras ni pagos en su cuenta todavía.</p>
+              </div>
+            </div>
           </td>
         </tr>
       `;
-    }).join('');
+    } else {
+      rowsHtml = this.movements.map(m => {
+        const dateObj = new Date(m.date);
+        const dateShort = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+        const dateFull = dateObj.toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
+
+        const isPendingAnotado = m.type !== 'pago' && m.rawItem?.estado === 'PENDIENTE';
+        const isChecked = this.selectedItemIds.has(m.uniqueId);
+
+        const amountColor = m.isPago ? 'text-primary font-bold' : 'text-error font-bold';
+        const amountPrefix = m.isPago ? '-$' : '+$';
+        const absAmount = Math.abs(m.monto).toLocaleString('es-AR');
+
+        return `
+          <tr class="border-b border-outline-variant/10 hover:bg-surface-container-lowest/50 transition-colors">
+            <td class="px-2 sm:px-4 py-3 sm:py-4 text-center">
+              ${isPendingAnotado ? `
+                <input type="checkbox" data-unique-id="${m.uniqueId}" ${isChecked ? 'checked' : ''} class="chk-select-item w-4 h-4 text-primary rounded border-outline-variant focus:ring-primary cursor-pointer" />
+              ` : ''}
+            </td>
+            
+            <td class="px-2 sm:px-4 py-3 sm:py-4 whitespace-nowrap text-on-surface-variant font-medium text-xs">
+              <span class="sm:hidden font-semibold">${dateShort}</span>
+              <span class="hidden sm:inline">${dateFull}</span>
+            </td>
+
+            <td class="px-3 sm:px-6 py-3 sm:py-4">
+              <div class="font-semibold text-on-surface text-xs sm:text-base">${m.desc}</div>
+              <div class="text-[11px] sm:text-xs text-on-surface-variant mt-0.5">${m.sub}</div>
+            </td>
+
+            <td class="px-3 sm:px-6 py-3 sm:py-4 text-right ${amountColor} text-xs sm:text-base whitespace-nowrap">
+              ${amountPrefix} ${absAmount}
+            </td>
+
+            <td class="hidden sm:table-cell px-6 py-4 text-right font-bold text-on-surface text-sm sm:text-base">
+              $ ${m.saldoAcumulado.toLocaleString('es-AR')}
+            </td>
+
+            <td class="px-2 sm:px-4 py-3 sm:py-4 text-right">
+              ${isPendingAnotado ? `
+                <button data-pay-amount="${m.monto}" data-unique-id="${m.uniqueId}" class="btn-pay-single-item h-8 px-2.5 sm:px-3 bg-primary-container text-white hover:bg-primary-fixed rounded-lg text-xs font-bold transition-colors cursor-pointer inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">payments</span>
+                  <span class="hidden sm:inline">Pagar</span>
+                </button>
+              ` : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
 
     this.innerHTML = `
       <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
