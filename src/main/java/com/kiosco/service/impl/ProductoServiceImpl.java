@@ -47,7 +47,6 @@ public class ProductoServiceImpl implements ProductoService {
         producto.setNombre(request.nombre());
         producto.setMarcaId(request.marca());
         producto.setCategoriaId(request.categoria());
-        producto.setPrecioCosto(request.precioCosto());
         producto.setPrecioVenta(request.precioVenta());
         producto.setStock(request.stock());
         producto.setUnidadMedida(UnidadMedida.fromString(request.unidadMedida()));
@@ -127,7 +126,6 @@ public class ProductoServiceImpl implements ProductoService {
         producto.setNombre(request.nombre());
         producto.setMarcaId(request.marca());
         producto.setCategoriaId(request.categoria());
-        producto.setPrecioCosto(request.precioCosto());
         producto.setPrecioVenta(request.precioVenta());
         producto.setStock(request.stock());
         producto.setUnidadMedida(UnidadMedida.fromString(request.unidadMedida()));
@@ -199,7 +197,6 @@ public class ProductoServiceImpl implements ProductoService {
                 // Valores por defecto de configuración
                 product.setUnidadMedida(UnidadMedida.UNIDAD);
                 product.setEstado(true);
-                product.setPrecioCosto(new BigDecimal("0.00"));
 
                 // --- COLUMNA B (Índice 1): Precio Venta ---
                 Cell precioCell = row.getCell(1);

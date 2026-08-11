@@ -252,7 +252,7 @@ class AppTableHistory extends HTMLElement {
           estado: "PENDIENTE",
           fechaAnotado: "2026-08-03T20:07:32.964",
           precioUnitario: 700,
-          producto: { productoId: 1, nombre: "Alfajor Bon o Bon", marca: "Arcor", categoria: "Golosinas", precioCosto: 450, precioVenta: 700, stock: 30, estado: true }
+          producto: { productoId: 1, nombre: "Alfajor Bon o Bon", marca: "Arcor", categoria: "Golosinas", precioVenta: 700, stock: 30, estado: true }
         }
       ];
 
