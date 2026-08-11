@@ -145,15 +145,9 @@ class AppModalProduct extends HTMLElement {
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Precio Costo ($)</label>
-                <input type="number" name="precioCosto" id="prod-cost" placeholder="0.00" min="0" step="any" class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md" />
-              </div>
-              <div>
-                <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Precio Venta ($) *</label>
-                <input type="number" name="precioVenta" id="prod-price" required placeholder="0.00" min="0" step="any" class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md" />
-              </div>
+            <div>
+              <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Precio Venta ($) *</label>
+              <input type="number" name="precioVenta" id="prod-price" required placeholder="0.00" min="0" step="any" class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md" />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -264,7 +258,6 @@ class AppModalProduct extends HTMLElement {
       this.submitTextEl.textContent = 'Guardar Cambios';
       this.querySelector('#prod-id').value = productData.id || productData.productoId || '';
       this.querySelector('#prod-name').value = productData.nombre || productData.name || '';
-      this.querySelector('#prod-cost').value = productData.precioCosto || productData.costPrice || '';
       this.querySelector('#prod-price').value = productData.precioVenta || productData.sellPrice || '';
       this.querySelector('#prod-stock').value = productData.stock || '0';
       this.querySelector('#prod-unit').value = productData.unidadMedida || 'unidad';

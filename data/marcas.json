@@ -1,52 +1,45 @@
-[
-  {
-    "id": 0,
-    "codigo": "SA",
-    "nombre": "Sin Asignar"
-  },
-  {
-    "id": 1,
-    "codigo": "COCA_COLA",
-    "nombre": "Coca-Cola"
-  },
-  {
-    "id": 2,
-    "codigo": "ARCOR",
-    "nombre": "ARCOR"
-  },
-  {
-    "id": 3,
-    "codigo": "PEPSICO",
-    "nombre": "PepsiCo"
-  },
-  {
-    "id": 4,
-    "codigo": "LA_SERENISIMA",
-    "nombre": "La Serenísima"
-  },
-  {
-    "id": 5,
-    "codigo": "MARLBORO",
-    "nombre": "Marlboro"
-  },
-  {
-    "id": 6,
-    "codigo": "BAGLEY",
-    "nombre": "Bagley"
-  },
-  {
-    "id": 7,
-    "codigo": "MONTECATINNI",
-    "nombre": "Montecatinni"
-  },
-  {
-    "id": 8,
-    "codigo": "BRAHAMA",
-    "nombre": "Brahama"
-  },
-  {
-    "id": 9,
-    "codigo": "BUDWEISER",
-    "nombre": "Budweiser"
-  }
-]
+[ {
+  "id" : 0,
+  "codigo" : "SA",
+  "nombre" : "Sin Asignar"
+}, {
+  "id" : 1,
+  "codigo" : "COCA_COLA",
+  "nombre" : "Coca-Cola"
+}, {
+  "id" : 2,
+  "codigo" : "ARCOR",
+  "nombre" : "ARCOR"
+}, {
+  "id" : 3,
+  "codigo" : "PEPSICO",
+  "nombre" : "PepsiCo"
+}, {
+  "id" : 4,
+  "codigo" : "LA_SERENISIMA",
+  "nombre" : "La Serenísima"
+}, {
+  "id" : 5,
+  "codigo" : "MARLBORO",
+  "nombre" : "Marlboro"
+}, {
+  "id" : 6,
+  "codigo" : "BAGLEY",
+  "nombre" : "Bagley"
+}, {
+  "id" : 7,
+  "codigo" : "MONTECATINNI",
+  "nombre" : "Montecatinni"
+}, {
+  "id" : 8,
+  "codigo" : "BRAHAMA",
+  "nombre" : "Brahama"
+}, {
+  "id" : 9,
+  "codigo" : "BUDWEISER",
+  "nombre" : "Budweiser"
+}, {
+  "id" : 10,
+  "codigo" : "PIPITOS",
+  "nombre" : "Pipitos"
+} ]

@@ -16,7 +16,7 @@ public class ProductoDTO {
     private Long productoId;
 
     private String nombre, marca, categoria;
-    private BigDecimal precioCosto, precioVenta;
+    private BigDecimal precioVenta;
     private LocalDate fechaRegistro;
     private String unidadMedida;
     private int stock;
@@ -28,7 +28,6 @@ public class ProductoDTO {
         this.marca = marca;
         this.categoria = categoria;
         this.unidadMedida = producto.getUnidadMedida().name();
-        this.precioCosto = producto.getPrecioCosto();
         this.precioVenta = producto.getPrecioVenta();
         this.fechaRegistro = producto.getFechaRegistro();
         this.stock = producto.getStock();
@@ -38,7 +37,6 @@ public class ProductoDTO {
     public ProductoDTO(Producto producto) {
         this.productoId = producto.getProductoId();
         this.nombre = producto.getNombre();
-        this.precioCosto = producto.getPrecioCosto();
         this.precioVenta = producto.getPrecioVenta();
         this.fechaRegistro = producto.getFechaRegistro();
         this.unidadMedida = producto.getUnidadMedida().name();

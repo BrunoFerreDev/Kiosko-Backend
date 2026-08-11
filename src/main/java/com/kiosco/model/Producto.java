@@ -26,7 +26,7 @@ public class Producto {
 
     private String nombre;
     private Long marcaId, categoriaId;
-    private BigDecimal precioCosto, precioVenta;
+    private BigDecimal precioVenta;
     private LocalDate fechaRegistro = LocalDate.now();
     @Enumerated(EnumType.STRING)
     private UnidadMedida unidadMedida;

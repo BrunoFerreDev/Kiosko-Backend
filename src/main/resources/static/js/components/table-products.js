@@ -133,7 +133,7 @@ class AppTableProducts extends HTMLElement {
       if (cardValue) {
         const allProducts = await ProductosService.getAll();
         const productList = Array.isArray(allProducts) ? allProducts : (allProducts.content || []);
-        const totalValue = productList.reduce((sum, p) => sum + ((parseFloat(p.precioCosto) || 0) * (parseInt(p.stock) || 0)), 0);
+        const totalValue = productList.reduce((sum, p) => sum + ((parseFloat(p.precioVenta) || 0) * (parseInt(p.stock) || 0)), 0);
         cardValue.setAttribute('value', totalValue.toLocaleString('es-AR'));
       }
     } catch (err) {
@@ -217,8 +217,6 @@ class AppTableProducts extends HTMLElement {
           <td class="px-4 sm:px-6 py-4">
             <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-xs font-semibold bg-primary-container/30 text-primary">${catName}</span>
           </td>
-          <!-- Hidden on Mobile -->
-          <td class="hidden sm:table-cell px-6 py-4 text-right text-on-surface-variant">$${(prod.precioCosto || 0).toLocaleString('es-AR')}</td>
           <td class="px-4 sm:px-6 py-4 text-right font-bold text-on-surface text-sm sm:text-base">$${(prod.precioVenta || 0).toLocaleString('es-AR')}</td>
           <td class="px-4 sm:px-6 py-4 text-center">
             <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-bold ${prod.stock <= 5 ? 'bg-error-container text-error' : 'bg-emerald-100 text-emerald-800'}">
@@ -377,7 +375,6 @@ class AppTableProducts extends HTMLElement {
               <tr class="bg-surface-container-low border-b border-outline-variant/20">
                 <th class="px-4 sm:px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-semibold uppercase">Producto</th>
                 <th class="px-4 sm:px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-semibold uppercase">Categoría</th>
-                <th class="hidden sm:table-cell px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-semibold uppercase text-right">Costo</th>
                 <th class="px-4 sm:px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-semibold uppercase text-right">Precio Venta</th>
                 <th class="px-4 sm:px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-semibold uppercase text-center">Stock</th>
                 <th class="px-4 sm:px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-semibold uppercase text-right ${adminClass}">Acciones</th>
@@ -465,7 +462,6 @@ class AppTableProducts extends HTMLElement {
             name: prod.nombre,
             category: prod.categoria,
             brand: prod.marca,
-            costPrice: prod.precioCosto,
             sellPrice: prod.precioVenta,
             stock: prod.stock,
             unidadMedida: prod.unidadMedida
