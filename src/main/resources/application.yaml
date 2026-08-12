@@ -2,9 +2,12 @@ spring:
   application:
     name: kiosco
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASS}
+    #url: ${DB_URL}
+    #username: ${DB_USER}
+    #password: ${DB_PASS}
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: develop
+    password: develop123
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 4
@@ -14,10 +17,22 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: ${DDL_TYPE}
+      ddl-auto: update
+      #ddl-auto: ${DDL_TYPE}
     properties:
       hibernate:
+        show_sql: true
         format_sql: true
+        jdbc.batch_size: 50
+        order_inserts: true
+        order_updates: true
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: develop123
 server:
   port: 8083
 logging:
@@ -25,6 +40,7 @@ logging:
     root: INFO
     com.kiosco: DEBUG
     org.springframework.web: INFO
+    org.springframework.cache: TRACE
 springdoc:
   pageable:
     support-page-request: true
