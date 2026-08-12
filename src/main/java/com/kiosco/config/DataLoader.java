@@ -1,39 +1,46 @@
 package com.kiosco.config;
 
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kiosco.model.Categoria;
+import com.kiosco.model.Marca;
 import com.kiosco.model.subModel.Administrador;
 import com.kiosco.repository.AdminRepo;
-import com.kiosco.repository.ComboItemRepo;
-import com.kiosco.repository.ComboRepo;
-import com.kiosco.repository.ProductoRepo;
-import com.kiosco.utils.CategoriaFileService;
-import com.kiosco.utils.MarcaFileService;
+import com.kiosco.repository.CategoriaRepo;
+import com.kiosco.repository.MarcaRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
     private final AdminRepo adminRepo;
-    private final MarcaFileService marcaFileService;
-    private final CategoriaFileService categoriaFileService;
     private final PasswordEncoder passwordEncoder;
-    private final ProductoRepo productoRepo;
-    private final ComboRepo comboRepo;
-    private final ComboItemRepo comboItemRepo;
+    private final CategoriaRepo categoriaRepo;
+    private final MarcaRepo marcaRepo;
+    private final ObjectMapper objectMapper;
+
+    @Value("${app.storage.categorias-path:./data/categorias.json}")
+    private String categoriasPath;
+
+    @Value("${app.storage.marcas-path:./data/marcas.json}")
+    private String marcasPath;
 
     @Override
     public void run(String... args) throws Exception {
         if (adminRepo.count() == 0) {
             cargarAdmins();
         }
-        if (categoriaFileService.obtenerTodas().isEmpty()) {
+        if (categoriaRepo.count() == 0) {
             cargarCategorias();
         }
-        if (marcaFileService.obtenerTodas().isEmpty()) {
+        if (marcaRepo.count() == 0) {
             cargarMarcas();
         }
     }
@@ -66,27 +73,39 @@ public class DataLoader implements CommandLineRunner {
     }
 
     private void cargarCategorias() {
-        if (categoriaFileService.obtenerTodas().isEmpty()) {
-            categoriaFileService.crearCategoria("BEBIDAS", "Bebidas y Gaseosas", "Gaseosas, aguas, jugos y aguas saborizadas");
-            categoriaFileService.crearCategoria("GOLOSINAS", "Golosinas y Chocolates", "Alfajores, caramelos, chicles y chocolates");
-            categoriaFileService.crearCategoria("ALMACEN", "Almacén y Galletitas", "Yerba, azúcar, galletitas dulces y saladas, fideos");
-            categoriaFileService.crearCategoria("CIGARRILLOS", "Cigarrillos y Tabaco", "Atados de cigarrillos, encendedores y sedas");
-            categoriaFileService.crearCategoria("FIAMBRERIA", "Fiambrería y Lácteos", "Quesos, fiambres, yogures, leches y manteca");
-            categoriaFileService.crearCategoria("CASERO", "Caseros", "Comidas caseeras, pizza, hamburguesa");
+        try {
+            File file = new File(categoriasPath);
+            if (file.exists()) {
+                List<Categoria> data = objectMapper.readValue(file, new TypeReference<List<Categoria>>() {});
+                List<Categoria> nuevas = data.stream().map(c -> {
+                    Categoria nueva = new Categoria();
+                    nueva.setCodigo(c.getCodigo());
+                    nueva.setNombre(c.getNombre());
+                    nueva.setDescripcion(c.getDescripcion());
+                    return nueva;
+                }).toList();
+                categoriaRepo.saveAll(nuevas);
+            }
+        } catch (Exception e) {
+            System.err.println("Error al cargar categorias desde JSON: " + e.getMessage());
         }
     }
 
     private void cargarMarcas() {
-        if (marcaFileService.obtenerTodas().isEmpty()) {
-            marcaFileService.crearMarca("COCA_COLA", "Coca-Cola");
-            marcaFileService.crearMarca("PEPSICO", "PepsiCo");
-            marcaFileService.crearMarca("ARCOR", "Arcor");
-            marcaFileService.crearMarca("BAGLEY", "Bagley");
-            marcaFileService.crearMarca("LA_SERENISIMA", "La Serenísima");
-            marcaFileService.crearMarca("MARLBORO", "Marlboro");
-            marcaFileService.crearMarca("MONTECATINI", "Montecatini");
-            marcaFileService.crearMarca("PPTS", "Pipitos");
+        try {
+            File file = new File(marcasPath);
+            if (file.exists()) {
+                List<Marca> data = objectMapper.readValue(file, new TypeReference<List<Marca>>() {});
+                List<Marca> nuevas = data.stream().map(m -> {
+                    Marca nueva = new Marca();
+                    nueva.setCodigo(m.getCodigo());
+                    nueva.setNombre(m.getNombre());
+                    return nueva;
+                }).toList();
+                marcaRepo.saveAll(nuevas);
+            }
+        } catch (Exception e) {
+            System.err.println("Error al cargar marcas desde JSON: " + e.getMessage());
         }
     }
-
 }

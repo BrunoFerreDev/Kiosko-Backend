@@ -25,7 +25,13 @@ public class Producto {
     private Long productoId;
 
     private String nombre;
-    private Long marcaId, categoriaId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "marca_id")
+    private Marca marca;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
     private BigDecimal precioVenta;
     private LocalDate fechaRegistro = LocalDate.now();
     @Enumerated(EnumType.STRING)

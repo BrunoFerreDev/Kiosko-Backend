@@ -1,6 +1,7 @@
 package com.kiosco.controller;
 
 import com.kiosco.dto.ProductoDTO;
+import com.kiosco.dto.PageDTO;
 import com.kiosco.record.ProductoR;
 import com.kiosco.service.ProductoService;
 import lombok.RequiredArgsConstructor;
@@ -71,12 +72,12 @@ public class ProductoController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProductoDTO>> obtenerTodos(@ParameterObject @PageableDefault(size = 10, sort = "fechaRegistro", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<PageDTO<ProductoDTO>> obtenerTodos(@ParameterObject @PageableDefault(size = 10, sort = "fechaRegistro", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(productoService.obtenerPaginado(pageable));
     }
 
     @GetMapping("/buscar")
-    public ResponseEntity<Page<ProductoDTO>> buscar(@RequestParam(required = false) String nombre, @RequestParam(required = false) String marca, @RequestParam(required = false) String categoria, @RequestParam(required = false) BigDecimal precioMin, @RequestParam(required = false) BigDecimal precioMax, @ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {
+    public ResponseEntity<PageDTO<ProductoDTO>> buscar(@RequestParam(required = false) String nombre, @RequestParam(required = false) String marca, @RequestParam(required = false) String categoria, @RequestParam(required = false) BigDecimal precioMin, @RequestParam(required = false) BigDecimal precioMax, @ParameterObject @PageableDefault(page = 0, size = 10) Pageable pageable) {
         return ResponseEntity.ok(productoService.buscar(nombre, marca, categoria, precioMin, precioMax, pageable));
     }
 

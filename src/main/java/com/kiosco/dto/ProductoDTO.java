@@ -9,10 +9,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import java.io.Serializable;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class ProductoDTO {
+public class ProductoDTO implements Serializable {
     private Long productoId;
 
     private String nombre, marca, categoria;

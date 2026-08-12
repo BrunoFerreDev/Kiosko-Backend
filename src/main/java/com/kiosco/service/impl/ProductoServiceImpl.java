@@ -1,7 +1,11 @@
 package com.kiosco.service.impl;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+
 import com.kiosco.UnidadMedida;
 import com.kiosco.dto.ProductoDTO;
+import com.kiosco.dto.PageDTO;
 import com.kiosco.model.Producto;
 import com.kiosco.record.CategoriaR;
 import com.kiosco.record.MarcaR;
@@ -9,8 +13,10 @@ import com.kiosco.record.ProductoR;
 import com.kiosco.repository.ProductoRepo;
 import com.kiosco.service.ProductoService;
 import com.kiosco.utils.BadRequestException;
-import com.kiosco.utils.CategoriaFileService;
-import com.kiosco.utils.MarcaFileService;
+import com.kiosco.repository.CategoriaRepo;
+import com.kiosco.repository.MarcaRepo;
+import com.kiosco.model.Categoria;
+import com.kiosco.model.Marca;
 import com.kiosco.utils.NotFoundException;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -34,19 +40,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductoServiceImpl implements ProductoService {
     private final ProductoRepo productoRepo;
-    private final MarcaFileService marcaFileService;
-    private final CategoriaFileService categoriaFileService;
+    private final MarcaRepo marcaRepo;
+    private final CategoriaRepo categoriaRepo;
 
     @Override
+    @CacheEvict(value = "productos", allEntries = true)
     public ProductoDTO crear(ProductoR request) {
         if (productoRepo.existsByNombreIgnoreCaseAndMarcaIdAndCategoriaIdAndEstadoTrue(request.nombre(), request.marca(), request.categoria())) {
             throw new BadRequestException("Ya existe un producto con el mismo nombre, marca y categoría.");
         }
 
         Producto producto = new Producto();
+        Marca marca = marcaRepo.findById(request.marca())
+                .orElseThrow(() -> new NotFoundException("Marca no encontrada con ID: " + request.marca()));
+        Categoria categoria = categoriaRepo.findById(request.categoria())
+                .orElseThrow(() -> new NotFoundException("Categoria no encontrada con ID: " + request.categoria()));
+
         producto.setNombre(request.nombre());
-        producto.setMarcaId(request.marca());
-        producto.setCategoriaId(request.categoria());
+        producto.setMarca(marca);
+        producto.setCategoria(categoria);
         producto.setPrecioVenta(request.precioVenta());
         producto.setStock(request.stock());
         producto.setUnidadMedida(UnidadMedida.fromString(request.unidadMedida()));
@@ -56,17 +68,19 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @Cacheable("productos")
     public List<ProductoDTO> obtenerTodos() {
         return productoRepo.findByEstadoTrue().stream().map(this::toDTO).toList();
     }
 
     @Override
-    public Page<ProductoDTO> obtenerPaginado(Pageable pageable) {
-        return productoRepo.findByEstadoTrue(pageable).map(this::toDTO);
+    @Cacheable(value = "productos", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
+    public PageDTO<ProductoDTO> obtenerPaginado(Pageable pageable) {
+        return new PageDTO<>(productoRepo.findByEstadoTrue(pageable).map(this::toDTO));
     }
 
     @Override
-    public Page<ProductoDTO> buscar(String nombre, String marca, String categoria, BigDecimal precioMin, BigDecimal precioMax, Pageable pageable) {
+    public PageDTO<ProductoDTO> buscar(String nombre, String marca, String categoria, BigDecimal precioMin, BigDecimal precioMax, Pageable pageable) {
         Specification<Producto> spec = (root, query, cb) -> cb.equal(root.get("estado"), true);
 
         if (nombre != null && !nombre.isBlank()) {
@@ -74,18 +88,18 @@ public class ProductoServiceImpl implements ProductoService {
                     cb.like(cb.lower(root.get("nombre")), "%" + nombre.toLowerCase() + "%"));
         }
         if (marca != null && !marca.isBlank()) {
-            List<Long> idsMarca = marcaFileService.buscarIdsPorNombre(marca);
+            List<Long> idsMarca = marcaRepo.findByNombreContainingIgnoreCase(marca).stream().map(Marca::getId).toList();
             if (idsMarca.isEmpty()) {
-                return Page.empty(pageable);
+                return new PageDTO<>(Page.empty(pageable));
             }
-            spec = spec.and((root, query, cb) -> root.get("marcaId").in(idsMarca));
+            spec = spec.and((root, query, cb) -> root.get("marca").get("id").in(idsMarca));
         }
         if (categoria != null && !categoria.isBlank()) {
-            List<Long> idsCategoria = categoriaFileService.buscarIdsPorNombre(categoria);
+            List<Long> idsCategoria = categoriaRepo.findByNombreContainingIgnoreCase(categoria).stream().map(Categoria::getId).toList();
             if (idsCategoria.isEmpty()) {
-                return Page.empty(pageable);
+                return new PageDTO<>(Page.empty(pageable));
             }
-            spec = spec.and((root, query, cb) -> root.get("categoriaId").in(idsCategoria));
+            spec = spec.and((root, query, cb) -> root.get("categoria").get("id").in(idsCategoria));
         }
         if (precioMin != null) {
             spec = spec.and((root, query, cb) ->
@@ -96,7 +110,7 @@ public class ProductoServiceImpl implements ProductoService {
                     cb.lessThanOrEqualTo(root.get("precioVenta"), precioMax));
         }
 
-        return productoRepo.findAll(spec, pageable).map(this::toDTO);
+        return new PageDTO<>(productoRepo.findAll(spec, pageable).map(this::toDTO));
     }
 
     @Override
@@ -106,15 +120,18 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @CacheEvict(value = "productos", allEntries = true)
     public ProductoDTO actualizar(Long id, ProductoR request) {
         Producto producto = productoRepo.findById(id).orElseThrow(() -> new NotFoundException("Producto no encontrado con ID: " + id));
 
         if (request.marca() != null) {
-            marcaFileService.buscarPorId(request.marca()).orElseThrow(() -> new NotFoundException("Marca no encontrada con ID: " + request.marca()));
+            Marca marca = marcaRepo.findById(request.marca()).orElseThrow(() -> new NotFoundException("Marca no encontrada con ID: " + request.marca()));
+            producto.setMarca(marca);
         }
 
         if (request.categoria() != null) {
-            categoriaFileService.buscarPorId(request.categoria()).orElseThrow(() -> new NotFoundException("Categoría no encontrada con ID: " + request.categoria()));
+            Categoria categoria = categoriaRepo.findById(request.categoria()).orElseThrow(() -> new NotFoundException("Categoría no encontrada con ID: " + request.categoria()));
+            producto.setCategoria(categoria);
         }
 
         // Validamos duplicados excluyendo el ID actual para todos los casos sin excepcion
@@ -124,8 +141,7 @@ public class ProductoServiceImpl implements ProductoService {
 
         // 3. Asignar atributos
         producto.setNombre(request.nombre());
-        producto.setMarcaId(request.marca());
-        producto.setCategoriaId(request.categoria());
+        // marca y categoria seteados arriba si vinieron en el request
         producto.setPrecioVenta(request.precioVenta());
         producto.setStock(request.stock());
         producto.setUnidadMedida(UnidadMedida.fromString(request.unidadMedida()));
@@ -138,6 +154,7 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @CacheEvict(value = "productos", allEntries = true)
     public void eliminar(Long id) {
         if (!productoRepo.existsById(id)) {
             throw new RuntimeException("Producto no encontrado con ID: " + id);
@@ -151,8 +168,8 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     private ProductoDTO toDTO(Producto producto) {
-        String nombreMarca = marcaFileService.buscarPorId(producto.getMarcaId()).map(MarcaR::nombre).orElse("Sin Marca");
-        String nombreCategoria = categoriaFileService.buscarPorId(producto.getCategoriaId()).map(CategoriaR::nombre).orElse("Sin Categoría");
+        String nombreMarca = producto.getMarca() != null ? producto.getMarca().getNombre() : "Sin Marca";
+        String nombreCategoria = producto.getCategoria() != null ? producto.getCategoria().getNombre() : "Sin Categoría";
         return new ProductoDTO(producto, nombreMarca, nombreCategoria);
     }
 
@@ -161,12 +178,12 @@ public class ProductoServiceImpl implements ProductoService {
      * Los IDs se resuelven desde los JSON en memoria; si no existen devuelve predicado vacío.
      */
     private Specification<Producto> specExcluirCaseros() {
-        List<Long> idsCategoriasExcluidas = categoriaFileService.buscarIdsPorNombre("Caseros");
+        List<Long> idsCategoriasExcluidas = categoriaRepo.findByNombreContainingIgnoreCase("Caseros").stream().map(Categoria::getId).toList();
 
         return (root, query, cb) -> {
             Predicate base = cb.conjunction();
             if (!idsCategoriasExcluidas.isEmpty()) {
-                base = cb.and(base, cb.not(root.get("categoriaId").in(idsCategoriasExcluidas)));
+                base = cb.and(base, cb.not(root.get("categoria").get("id").in(idsCategoriasExcluidas)));
             }
             return base;
         };
@@ -232,13 +249,13 @@ public class ProductoServiceImpl implements ProductoService {
                 Cell marcaCell = row.getCell(3);
                 String marcaStr = formatter.formatCellValue(marcaCell).trim();
                 if (marcaStr.isEmpty()) {
-                    product.setMarcaId(0L);
+                    product.setMarca(null);
                 } else {
                     try {
-                        // Limpiamos posibles formatos decimales o puntos antes de convertir a Long
-                        product.setMarcaId(Long.parseLong(marcaStr.replace(".", "").replace(",", "")));
+                        Long mId = Long.parseLong(marcaStr.replace(".", "").replace(",", ""));
+                        marcaRepo.findById(mId).ifPresent(product::setMarca);
                     } catch (NumberFormatException e) {
-                        product.setMarcaId(0L); // Asigna 0L si ocurre un error al leer
+                        product.setMarca(null);
                     }
                 }
 
@@ -246,12 +263,13 @@ public class ProductoServiceImpl implements ProductoService {
                 Cell categoriaCell = row.getCell(4);
                 String categoriaStr = formatter.formatCellValue(categoriaCell).trim();
                 if (categoriaStr.isEmpty()) {
-                    product.setCategoriaId(0L);
+                    product.setCategoria(null);
                 } else {
                     try {
-                        product.setCategoriaId(Long.parseLong(categoriaStr.replace(".", "").replace(",", "")));
+                        Long cId = Long.parseLong(categoriaStr.replace(".", "").replace(",", ""));
+                        categoriaRepo.findById(cId).ifPresent(product::setCategoria);
                     } catch (NumberFormatException e) {
-                        product.setCategoriaId(0L); // Asigna 0L si ocurre un error al leer
+                        product.setCategoria(null);
                     }
                 }
 
@@ -336,15 +354,15 @@ public class ProductoServiceImpl implements ProductoService {
                 row.createCell(2).setCellValue(producto.getStock());
 
                 // Columna D (3): Marca ID
-                if (producto.getMarcaId() != null) {
-                    row.createCell(3).setCellValue(producto.getMarcaId());
+                if (producto.getMarca() != null) {
+                    row.createCell(3).setCellValue(producto.getMarca().getId());
                 } else {
                     row.createCell(3).setCellValue(0);
                 }
 
                 // Columna E (4): Categoría ID
-                if (producto.getCategoriaId() != null) {
-                    row.createCell(4).setCellValue(producto.getCategoriaId());
+                if (producto.getCategoria() != null) {
+                    row.createCell(4).setCellValue(producto.getCategoria().getId());
                 } else {
                     row.createCell(4).setCellValue(0);
                 }
