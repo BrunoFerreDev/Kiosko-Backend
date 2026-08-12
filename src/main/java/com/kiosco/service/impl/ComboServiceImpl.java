@@ -8,12 +8,15 @@ import com.kiosco.record.ComboR;
 import com.kiosco.repository.ComboItemRepo;
 import com.kiosco.repository.ComboRepo;
 import com.kiosco.repository.ProductoRepo;
+import com.kiosco.service.CloudinaryService;
 import com.kiosco.service.ComboService;
 import com.kiosco.utils.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -25,15 +28,22 @@ public class ComboServiceImpl implements ComboService {
     private final ComboRepo comboRepo;
     private final ComboItemRepo comboItemRepo;
     private final ProductoRepo productoRepo;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     @Transactional
-    public ComboDTO crear(ComboR request) {
+    public ComboDTO crear(ComboR request, MultipartFile imagen) {
         Combo combo = new Combo();
         combo.setNombre(request.nombre());
         combo.setPrecio(request.precio());
         combo.setActivo(request.activo() != null ? request.activo() : true);
-        combo.setImgUrl("--");
+        
+        if (imagen != null && !imagen.isEmpty()) {
+            combo.setImgUrl(cloudinaryService.upload(imagen));
+        } else {
+            combo.setImgUrl("--");
+        }
+        
         Combo guardado = comboRepo.save(combo);
 
         if (request.items() != null) {
@@ -76,7 +86,7 @@ public class ComboServiceImpl implements ComboService {
 
     @Override
     @Transactional
-    public ComboDTO actualizar(Long id, ComboR request) {
+    public ComboDTO actualizar(Long id, ComboR request, MultipartFile imagen) {
         Combo combo = comboRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Combo no encontrado con ID: " + id));
 
@@ -84,6 +94,10 @@ public class ComboServiceImpl implements ComboService {
         if (request.precio() != null) combo.setPrecio(request.precio());
         if (request.activo() != null) combo.setActivo(request.activo());
         if (request.imgUrl() != null) combo.setImgUrl(request.imgUrl());
+        
+        if (imagen != null && !imagen.isEmpty()) {
+            combo.setImgUrl(cloudinaryService.upload(imagen));
+        }
 
         if (request.items() != null) {
             List<ComboItem> existentes = comboItemRepo.findByComboComboId(id);
