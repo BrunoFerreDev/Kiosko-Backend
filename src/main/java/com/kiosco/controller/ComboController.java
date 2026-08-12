@@ -11,7 +11,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,9 +24,11 @@ public class ComboController {
 
     private final ComboService comboService;
 
-    @PostMapping
-    public ResponseEntity<ComboDTO> crear(@RequestBody ComboR request) {
-        return new ResponseEntity<>(comboService.crear(request), HttpStatus.CREATED);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ComboDTO> crear(
+            @RequestPart("combo") ComboR request,
+            @RequestPart(value = "imagen", required = false) MultipartFile imagen) {
+        return new ResponseEntity<>(comboService.crear(request, imagen), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -43,9 +47,12 @@ public class ComboController {
         return ResponseEntity.ok(comboService.obtenerPorId(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ComboDTO> actualizar(@PathVariable Long id, @RequestBody ComboR request) {
-        return ResponseEntity.ok(comboService.actualizar(id, request));
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ComboDTO> actualizar(
+            @PathVariable Long id, 
+            @RequestPart("combo") ComboR request,
+            @RequestPart(value = "imagen", required = false) MultipartFile imagen) {
+        return ResponseEntity.ok(comboService.actualizar(id, request, imagen));
     }
 
     @DeleteMapping("/{id}")

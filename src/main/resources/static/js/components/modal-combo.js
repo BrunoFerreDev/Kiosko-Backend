@@ -44,8 +44,8 @@ class AppModalCombo extends HTMLElement {
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">URL de la Imagen (opcional)</label>
-                <input type="url" name="imgUrl" id="combo-imgurl" placeholder="https://ejemplo.com/imagen.jpg" class="w-full h-11 px-4 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md" />
+                <label class="block font-label-caps text-label-caps text-on-surface uppercase mb-1 font-semibold">Imagen del Combo (opcional)</label>
+                <input type="file" name="imagen" id="combo-imagen" accept="image/*" class="w-full h-11 px-4 py-2 bg-surface text-on-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none text-body-md" />
               </div>
 
               <div class="flex items-center pt-6">
@@ -161,7 +161,9 @@ class AppModalCombo extends HTMLElement {
       const nombre = this.querySelector('#combo-nombre').value;
       const precio = parseFloat(this.querySelector('#combo-precio').value);
       const activo = this.querySelector('#combo-activo').checked;
-      const imgUrl = this.querySelector('#combo-imgurl').value || null;
+      
+      const imagenInput = this.querySelector('#combo-imagen');
+      const imagenFile = imagenInput.files.length > 0 ? imagenInput.files[0] : null;
 
       // Extract items from dynamic rows
       const itemsPayload = [];
@@ -204,18 +206,23 @@ class AppModalCombo extends HTMLElement {
         nombre,
         precio,
         activo,
-        imgUrl,
         items: itemsPayload
       };
+
+      const formData = new FormData();
+      formData.append('combo', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+      if (imagenFile) {
+        formData.append('imagen', imagenFile);
+      }
 
       this.setSubmitting(true);
       try {
         let response;
         if (isEdit) {
-          response = await CombosService.update(id, payload);
+          response = await CombosService.update(id, formData);
           alert(`Combo "${nombre}" actualizado.`);
         } else {
-          response = await CombosService.create(payload);
+          response = await CombosService.create(formData);
           alert(`Combo "${nombre}" creado exitosamente.`);
         }
         this.dispatchEvent(new CustomEvent(isEdit ? 'combo-updated' : 'combo-created', { detail: response, bubbles: true }));
@@ -386,7 +393,8 @@ class AppModalCombo extends HTMLElement {
       this.querySelector('#combo-id').value = comboData.id || comboData.comboId || '';
       this.querySelector('#combo-nombre').value = comboData.nombre || '';
       this.querySelector('#combo-precio').value = comboData.precio || '';
-      this.querySelector('#combo-imgurl').value = comboData.imgUrl || '';
+      const comboImagen = this.querySelector('#combo-imagen');
+      if (comboImagen) comboImagen.value = ''; // Cannot set value for file input
       this.querySelector('#combo-activo').checked = comboData.activo !== false;
     } else {
       this.titleEl.textContent = 'Crear Combo Especial';

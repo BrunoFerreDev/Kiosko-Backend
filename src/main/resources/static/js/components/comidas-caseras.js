@@ -763,17 +763,19 @@ class AppComidasCaseras extends HTMLElement {
       ? `<span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/90 text-white backdrop-blur-sm"><span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>Activo</span>`
       : `<span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-black/40 text-white/70 backdrop-blur-sm">Inactivo</span>`;
 
-    // Imagen real si existe imgUrl, sino placeholder gradiente
-    const imgContent = combo.imgUrl
-      ? `<img src="${combo.imgUrl}" alt="${combo.nombre || 'Combo'}"
-            class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+    const hasImage = combo.imgUrl && combo.imgUrl !== "--" && combo.imgUrl !== "";
+    const imgContent = hasImage
+      ? `<img src="${combo.imgUrl}" alt="${combo.nombre || 'Combo'}" data-img="${combo.imgUrl}"
+            class="combo-image-zoom absolute inset-0 w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700 ease-out cursor-zoom-in"
             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
           <div style="display:none" class="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-80">
-            <span class="material-symbols-outlined text-white/90 text-5xl" style="font-variation-settings:'FILL' 1">lunch_dining</span>
+            <span class="material-symbols-outlined text-white/90 text-5xl drop-shadow-md" style="font-variation-settings:'FILL' 1">lunch_dining</span>
           </div>`
-      : `<div class="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-80">
-            <span class="material-symbols-outlined text-white/90 text-5xl" style="font-variation-settings:'FILL' 1">lunch_dining</span>
-            <span class="text-white/50 text-xs font-semibold uppercase tracking-widest">Combo</span>
+      : `<div class="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-80 bg-gradient-to-t from-black/40 to-transparent">
+            <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center mb-1">
+              <span class="material-symbols-outlined text-white text-4xl shadow-sm" style="font-variation-settings:'FILL' 1">lunch_dining</span>
+            </div>
+            <span class="text-white text-xs font-bold uppercase tracking-[0.2em] drop-shadow-md">Combo</span>
           </div>`;
 
     const itemList = items.length
@@ -796,14 +798,15 @@ class AppComidasCaseras extends HTMLElement {
     return `
       <article class="group bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-card hover:shadow-active transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col cursor-pointer">
         <!-- Image area -->
-        <div class="relative h-48 bg-gradient-to-br ${gradient} overflow-hidden">
+        <div class="relative h-48 bg-gradient-to-br ${gradient} overflow-hidden rounded-t-2xl">
           ${imgContent}
           <!-- Overlay badges -->
           <div class="absolute top-3 left-3">${activoBadge}</div>
           ${adminOverlay}
           ${precio
-            ? `<div class="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-xl">
-                <span class="text-white font-bold text-lg leading-none">${precio}</span>
+            ? `<div class="absolute bottom-3 right-3 bg-primary text-on-primary shadow-xl px-3 py-1.5 rounded-xl transform rotate-2 group-hover:rotate-0 transition-all border border-white/20 backdrop-blur-md flex flex-col items-center">
+                <span class="text-[9px] uppercase font-bold tracking-widest opacity-90 leading-none mb-0.5">Precio</span>
+                <span class="font-black text-lg leading-none">${precio}</span>
               </div>`
             : ''}
         </div>
@@ -826,6 +829,12 @@ class AppComidasCaseras extends HTMLElement {
   }
 
   _bindComboActions(area) {
+    area.querySelectorAll('.combo-image-zoom').forEach(img => {
+      img.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._showImageZoom(img.dataset.img);
+      });
+    });
     area.querySelectorAll('.btn-edit-combo').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -862,6 +871,35 @@ class AppComidasCaseras extends HTMLElement {
         const nombre = btn.dataset.name;
         this._addToCart({ id, precio, nombre, type: 'combo' });
       });
+    });
+  }
+
+  _showImageZoom(url) {
+    let backdrop = document.getElementById('image-zoom-backdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.id = 'image-zoom-backdrop';
+      backdrop.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm cursor-zoom-out p-4 opacity-0 transition-opacity duration-300';
+      
+      const img = document.createElement('img');
+      img.className = 'max-w-full max-h-full object-contain rounded-2xl shadow-2xl scale-95 transition-transform duration-300';
+      
+      backdrop.appendChild(img);
+      document.body.appendChild(backdrop);
+      
+      backdrop.addEventListener('click', () => {
+        backdrop.classList.remove('opacity-100');
+        img.classList.remove('scale-100');
+        setTimeout(() => backdrop.remove(), 300);
+      });
+    }
+    
+    const imgEl = backdrop.querySelector('img');
+    imgEl.src = url;
+    
+    requestAnimationFrame(() => {
+      backdrop.classList.add('opacity-100');
+      imgEl.classList.add('scale-100');
     });
   }
 
