@@ -419,6 +419,12 @@ export const AnotadosComboService = {
   marcarComoPagado: (id, metodoPago = 'EFECTIVO') => ApiService.request(`${API_BASE_URL}/anotados-combo/${id}/pagar?metodoPago=${metodoPago}`, { method: 'PUT' })
 };
 
+// 8. AnotadosMenu Service (Mock/Placeholder)
+export const AnotadosMenuService = {
+  getByCliente: (clienteId, page = 0, size = 15) => Promise.resolve({ content: [] }),
+  getPaged: (page = 0, size = 10) => Promise.resolve({ content: [] })
+};
+
 // Global export for non-module usage if needed
 window.KioskoAPI = {
   Clientes: ClientesService,
@@ -427,5 +433,6 @@ window.KioskoAPI = {
   Pagos: PagosService,
   Auth: AuthService,
   Combos: CombosService,
-  AnotadosCombo: AnotadosComboService
+  AnotadosCombo: AnotadosComboService,
+  AnotadosMenu: AnotadosMenuService
 };
